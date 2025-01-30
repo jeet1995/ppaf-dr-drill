@@ -7,7 +7,7 @@ import java.time.Duration;
 
 public class Configuration {
 
-    @Parameter(names = "-cosmosAccountMasterKey", description = "The master key associated with the account.", required = false)
+    @Parameter(names = "-cosmosAccountMasterKey", description = "The master key associated with the account.", required = true)
     private String cosmosAccountMasterKey = "";
 
     // We need to pass the DocumentEndpoint in for environments higher than Test
@@ -16,7 +16,7 @@ public class Configuration {
     //   <>.documents-test.windows-int.net
     // Stage environment has document endpoint
     //   <>.documents-staging.windows-ppe.net
-    @Parameter(names = "-documentEndpoint", description = "The endpoint to use as suffix to the account name.", required = false)
+    @Parameter(names = "-documentEndpoint", description = "The endpoint to use as suffix to the account name.", required = true)
     private String documentEndpoint = "";
 
     @Parameter(names = "-databaseName", description = "The database name to be used.")
