@@ -17,15 +17,15 @@ mvn -e -Ppackage-assembly clean package
 
 -Possible Configurations
 
-| Configuration            | Configuration Description                                             | Possible values                        | Defaults                                  |
-|--------------------------|-----------------------------------------------------------------------|----------------------------------------|-------------------------------------------|
-| `cosmosAccountMasterKey` | The primary key used to authenticate with the Cosmos DB account       | The relevant string                    | Setting this is compulsory.               |
-| `documentEndpoint`       | The account URL.                                                      | The relevant string                    | Setting this is compulsory.               |
-| `databaseName`           | The name based ID of the database                                     | Some string                            | db                                        |
-| `containerName`          | The name based ID of the container.                                   | Some string                            | ct                                        |
-| `runningTime`            | The duration the workload is to run (represented in ISO-8601 format). | Some string                            | `PT3M`                                    |
-| `numberOfThreads`        | The no. of parallel workers to use in the workload.                   | Positive integer                       | 1                                         |
-| `partitionKeyPath`       | The partition key path to be used for the container.                  | `/id`                                  | `/id`                                     |
+| Configuration      | Configuration Description                                             | Possible values     | Defaults                    |
+|--------------------|-----------------------------------------------------------------------|---------------------|-----------------------------|
+| `accountMasterKey` | The master key associated with the account.                           | The relevant string | Setting this is compulsory. |
+| `accountHost`      | The account host URL.                                                 | The relevant string | Setting this is compulsory. |
+| `databaseName`     | The name based ID of the database                                     | Some string         | db                          |
+| `containerName`    | The name based ID of the container.                                   | Some string         | ct                          |
+| `runningTime`      | The duration the workload is to run (represented in ISO-8601 format). | Some string         | `PT3M`                      |
+| `numberOfThreads`  | The no. of parallel workers to use in the workload.                   | Positive integer    | 1                           |
+| `partitionKeyPath` | The partition key path to be used for the container.                  | `/id`               | `/id`                       |
 
 3.2 Running the `jar`
 
@@ -33,5 +33,5 @@ mvn -e -Ppackage-assembly clean package
 - Copy-paste the JAR to the parent directory `ppaf-dr-drill-workload`
 - Run the below command
 ```
-java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -cosmosAccountMasterKey "" -documentEndpoint "" -runningTime "PT3M"
+java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -accountMasterKey "" -accountHost "" -runningTime "PT3M"
 ```

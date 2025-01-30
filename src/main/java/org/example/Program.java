@@ -4,7 +4,6 @@ import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosAsyncContainer;
 import com.azure.cosmos.CosmosAsyncDatabase;
 import com.azure.cosmos.CosmosClientBuilder;
-import com.azure.cosmos.CosmosDiagnostics;
 import com.azure.cosmos.CosmosDiagnosticsContext;
 import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.implementation.CosmosDaemonThreadFactory;
@@ -18,9 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -63,8 +60,8 @@ public class Program {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(parallelism, new CosmosDaemonThreadFactory("CosmosUpsertExecutor"));
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture[parallelism];
 
-        String documentEndpoint = cfg.getDocumentEndpoint().isEmpty() ? TestConfigurations.HOST : cfg.getDocumentEndpoint();
-        String masterKey = cfg.getCosmosAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : cfg.getCosmosAccountMasterKey();
+        String documentEndpoint = cfg.getAccountHost().isEmpty() ? TestConfigurations.HOST : cfg.getAccountHost();
+        String masterKey = cfg.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : cfg.getAccountMasterKey();
 
         try (CosmosAsyncClient cosmosAsyncClient = new CosmosClientBuilder()
                 .directMode()

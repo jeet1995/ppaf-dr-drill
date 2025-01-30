@@ -7,8 +7,8 @@ import java.time.Duration;
 
 public class Configuration {
 
-    @Parameter(names = "-cosmosAccountMasterKey", description = "The master key associated with the account.", required = true)
-    private String cosmosAccountMasterKey = "";
+    @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = true)
+    private String accountMasterKey = "";
 
     // We need to pass the DocumentEndpoint in for environments higher than Test
     // Different environments have different endpoints
@@ -16,8 +16,8 @@ public class Configuration {
     //   <>.documents-test.windows-int.net
     // Stage environment has document endpoint
     //   <>.documents-staging.windows-ppe.net
-    @Parameter(names = "-documentEndpoint", description = "The endpoint to use as suffix to the account name.", required = true)
-    private String documentEndpoint = "";
+    @Parameter(names = "-accountHost", description = "The account host URL.", required = true)
+    private String accountHost = "";
 
     @Parameter(names = "-databaseName", description = "The database name to be used.")
     private String databaseName = "db";
@@ -40,21 +40,21 @@ public class Configuration {
     @Parameter(names = "-physicalPartitionCount", description = "The count of physical partitions required in the target container.")
     private int physicalPartitionCount = 10;
 
-    public String getCosmosAccountMasterKey() {
-        return cosmosAccountMasterKey;
+    public String getAccountMasterKey() {
+        return accountMasterKey;
     }
 
-    public Configuration setCosmosAccountMasterKey(String cosmosAccountMasterKey) {
-        this.cosmosAccountMasterKey = cosmosAccountMasterKey;
+    public Configuration setAccountMasterKey(String accountMasterKey) {
+        this.accountMasterKey = accountMasterKey;
         return this;
     }
 
-    public String getDocumentEndpoint() {
-        return documentEndpoint;
+    public String getAccountHost() {
+        return accountHost;
     }
 
-    public Configuration setDocumentEndpoint(String documentEndpoint) {
-        this.documentEndpoint = documentEndpoint;
+    public Configuration setAccountHost(String accountHost) {
+        this.accountHost = accountHost;
         return this;
     }
 

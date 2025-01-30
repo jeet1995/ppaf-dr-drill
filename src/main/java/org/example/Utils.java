@@ -20,8 +20,8 @@ public class Utils {
 
     public static List<String> getPreferredRegions(Configuration configuration) {
 
-        String documentEndpoint = configuration.getDocumentEndpoint().isEmpty() ? TestConfigurations.HOST : configuration.getDocumentEndpoint();
-        String masterKey = configuration.getCosmosAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : configuration.getCosmosAccountMasterKey();
+        String documentEndpoint = configuration.getAccountHost().isEmpty() ? TestConfigurations.HOST : configuration.getAccountHost();
+        String masterKey = configuration.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : configuration.getAccountMasterKey();
 
         try (CosmosAsyncClient client = new CosmosClientBuilder()
                 .endpoint(documentEndpoint)
