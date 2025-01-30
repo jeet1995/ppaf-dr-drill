@@ -26,7 +26,6 @@ mvn -e -Ppackage-assembly clean package
 | `runningTime`            | The duration the workload is to run (represented in ISO-8601 format). | Some string                            | `PT3M`                                    |
 | `numberOfThreads`        | The no. of parallel workers to use in the workload.                   | Positive integer                       | 1                                         |
 | `partitionKeyPath`       | The partition key path to be used for the container.                  | `/id`                                  | `/id`                                     |
-| `preferredRegions`       | String of comma-separated regions.                                    | `West US 2, South Central US, East US` | `North Central US, West US 2, Central US` |
 
 3.2 Running the `jar`
 
