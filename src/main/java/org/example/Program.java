@@ -177,7 +177,7 @@ public class Program {
                                         statusCode,
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
-                                        cosmosDiagnosticsContext.toString(),
+                                        cosmosException.getDiagnostics().toString(),
                                         cosmosException.getMessage());
 
                                 logger.error(requestResponseInfo.toString());
