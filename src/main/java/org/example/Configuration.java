@@ -155,4 +155,20 @@ public class Configuration {
             return Duration.parse(value);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Configuration{" +
+                "accountHost='" + accountHost + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", containerName='" + containerName + '\'' +
+                ", runningTime=" + runningTime +
+                ", numberOfThreads=" + numberOfThreads +
+                ", partitionKeyPath='" + partitionKeyPath + '\'' +
+                ", containerTtlInSeconds=" + containerTtlInSeconds +
+                ", physicalPartitionCount=" + physicalPartitionCount +
+                ", sleepTime=" + sleepTime +
+                ", isSharedThroughput=" + isSharedThroughput +
+                '}';
+    }
 }

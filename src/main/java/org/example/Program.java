@@ -29,6 +29,7 @@ public class Program {
 
     private static final Logger logger = LoggerFactory.getLogger(Program.class);
 
+
     static {
         LocalDateTime myDateObj = LocalDateTime.now();
         DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
@@ -63,6 +64,8 @@ public class Program {
 
         String documentEndpoint = cfg.getAccountHost().isEmpty() ? TestConfigurations.HOST : cfg.getAccountHost();
         String masterKey = cfg.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : cfg.getAccountMasterKey();
+
+        logger.info("Run Configurations : {}", cfg);
 
         try (CosmosAsyncClient cosmosAsyncClient = new CosmosClientBuilder()
                 .directMode()
@@ -121,7 +124,7 @@ public class Program {
             }
 
         } finally {
-            System.clearProperty("COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED");
+            // no-op
         }
     }
 
@@ -143,7 +146,6 @@ public class Program {
 
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
-                            int clientId = scheduledFutureId;
                             int statusCode = createResponse.getStatusCode();
                             int subStatusCode = 0;
 
@@ -156,14 +158,14 @@ public class Program {
                                     timeOfResponse,
                                     successCountSnapshot,
                                     failureCountSnapshot,
-                                    clientId,
+                                    scheduledFutureId,
                                     statusCode,
                                     subStatusCode,
                                     commaSeparatedContactedRegionNames,
                                     createResponse.getDiagnostics().toString(),
                                     "");
 
-                            logger.info(requestResponseInfo.toString());
+                            logger.debug(requestResponseInfo.toString());
                         })
                         .onErrorComplete(throwable -> {
 
@@ -171,7 +173,6 @@ public class Program {
 
                                 int successCountSnapshot = successCount.get();
                                 int failureCountSnapshot = failureCount.incrementAndGet();
-                                int threadId = scheduledFutureId;
 
                                 CosmosException cosmosException = (CosmosException) throwable;
 
@@ -189,7 +190,7 @@ public class Program {
                                         timeOfResponse,
                                         successCountSnapshot,
                                         failureCountSnapshot,
-                                        threadId,
+                                        scheduledFutureId,
                                         statusCode,
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
