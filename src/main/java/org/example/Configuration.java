@@ -40,6 +40,30 @@ public class Configuration {
     @Parameter(names = "-physicalPartitionCount", description = "The count of physical partitions required in the target container.")
     private int physicalPartitionCount = 10;
 
+    @Parameter(names = "-sleepTime", description = "The duration in milliseconds between each iteration of tasks.")
+    private int sleepTime = 1000;
+
+    @Parameter(names = "-isSharedThroughput", description = "A boolean parameter to indicate whether the database is a shared throughput database.", arity = 1)
+    private boolean isSharedThroughput = false;
+
+    public int getSleepTime() {
+        return sleepTime;
+    }
+
+    public Configuration setSleepTime(int sleepTime) {
+        this.sleepTime = sleepTime;
+        return this;
+    }
+
+    public boolean isSharedThroughput() {
+        return isSharedThroughput;
+    }
+
+    public Configuration setSharedThroughput(boolean sharedThroughput) {
+        isSharedThroughput = sharedThroughput;
+        return this;
+    }
+
     public String getAccountMasterKey() {
         return accountMasterKey;
     }

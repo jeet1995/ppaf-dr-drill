@@ -9,6 +9,7 @@ import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.implementation.CosmosDaemonThreadFactory;
 import com.azure.cosmos.implementation.TestConfigurations;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.ThroughputProperties;
 import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,15 +72,29 @@ public class Program {
                 .userAgentSuffix(String.valueOf(runId))
                 .buildAsyncClient()) {
 
-            cosmosAsyncClient.createDatabaseIfNotExists(cfg.getDatabaseName()).block();
+            boolean isSharedThroughput = cfg.isSharedThroughput();
+
+            if (isSharedThroughput) {
+                cosmosAsyncClient.createDatabaseIfNotExists(
+                        cfg.getDatabaseName(),
+                        ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                        .block();
+
+                CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
+
+                CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
+                cosmosAsyncDatabase.createContainerIfNotExists(cosmosContainerProperties).block();
+            } else {
+                cosmosAsyncClient.createDatabaseIfNotExists(cfg.getDatabaseName()).block();
+
+                CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
+
+                CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
+                cosmosAsyncDatabase.createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000)).block();
+            }
 
             CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
-
-            CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
-
-            cosmosAsyncDatabase.createContainerIfNotExists(cosmosContainerProperties).block();
-
-            CosmosAsyncContainer cosmosAsyncContainer = cosmosAsyncDatabase.getContainer(cosmosContainerProperties.getId());
+            CosmosAsyncContainer cosmosAsyncContainer = cosmosAsyncDatabase.getContainer(cfg.getContainerName());
 
             Instant startTime = Instant.now();
 
@@ -89,7 +104,7 @@ public class Program {
 
                 scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
                     try {
-                        onCreate(cosmosAsyncContainer, startTime, runDuration, finalI, successCount, failureCount);
+                        onCreate(cosmosAsyncContainer, cfg, startTime, runDuration, finalI, successCount, failureCount);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -112,6 +127,7 @@ public class Program {
 
     private static void onCreate(
             CosmosAsyncContainer cosmosAsyncContainer,
+            Configuration cfg,
             Instant startTime,
             Duration runDuration,
             int scheduledFutureId,
@@ -186,7 +202,7 @@ public class Program {
                         })
                         .block();
             }
-            Thread.sleep(1_000);
+            Thread.sleep(cfg.getSleepTime());
         }
     }
 }
