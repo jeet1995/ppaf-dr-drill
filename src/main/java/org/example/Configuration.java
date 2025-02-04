@@ -46,6 +46,18 @@ public class Configuration {
     @Parameter(names = "-isSharedThroughput", description = "A boolean parameter to indicate whether the database is a shared throughput database.", arity = 1)
     private boolean isSharedThroughput = false;
 
+    @Parameter(names = "-shouldLogCosmosDiagnosticsForSuccessfulResponse", description = "A boolean parameter to indicate whether the diagnostics string is logged for a successful response.", arity = 1)
+    private boolean shouldLogCosmosDiagnosticsForSuccessfulResponse = false;
+
+    public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
+        return shouldLogCosmosDiagnosticsForSuccessfulResponse;
+    }
+
+    public Configuration setShouldLogCosmosDiagnosticsForSuccessfulResponse(boolean shouldLogCosmosDiagnosticsForSuccessfulResponse) {
+        this.shouldLogCosmosDiagnosticsForSuccessfulResponse = shouldLogCosmosDiagnosticsForSuccessfulResponse;
+        return this;
+    }
+
     public int getSleepTime() {
         return sleepTime;
     }

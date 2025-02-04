@@ -154,18 +154,33 @@ public class Program {
                             Set<String> contactedRegionNames = createResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
                             String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                            RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
-                                    timeOfResponse,
-                                    successCountSnapshot,
-                                    failureCountSnapshot,
-                                    scheduledFutureId,
-                                    statusCode,
-                                    subStatusCode,
-                                    commaSeparatedContactedRegionNames,
-                                    createResponse.getDiagnostics().toString(),
-                                    "");
+                            RequestResponseInfo requestResponseInfo;
 
-                            logger.debug(requestResponseInfo.toString());
+                            if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
+                                requestResponseInfo = new RequestResponseInfo(
+                                        timeOfResponse,
+                                        successCountSnapshot,
+                                        failureCountSnapshot,
+                                        scheduledFutureId,
+                                        statusCode,
+                                        subStatusCode,
+                                        commaSeparatedContactedRegionNames,
+                                        "",
+                                        "");
+                            } else {
+                                requestResponseInfo = new RequestResponseInfo(
+                                        timeOfResponse,
+                                        successCountSnapshot,
+                                        failureCountSnapshot,
+                                        scheduledFutureId,
+                                        statusCode,
+                                        subStatusCode,
+                                        commaSeparatedContactedRegionNames,
+                                        createResponse.getDiagnostics().toString(),
+                                        "");
+                            }
+
+                            logger.info(requestResponseInfo.toString());
                         })
                         .onErrorComplete(throwable -> {
 
