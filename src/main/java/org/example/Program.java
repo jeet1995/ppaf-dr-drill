@@ -165,7 +165,7 @@ public class Program {
                                         statusCode,
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
-                                        "",
+                                        createResponse.getDiagnostics().toString(),
                                         "");
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
@@ -176,7 +176,7 @@ public class Program {
                                         statusCode,
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
-                                        createResponse.getDiagnostics().toString(),
+                                        "",
                                         "");
                             }
 
