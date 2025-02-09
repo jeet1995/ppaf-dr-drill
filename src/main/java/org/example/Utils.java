@@ -37,10 +37,10 @@ public class Utils {
         }
         catch (Exception e) {
 
-            if (documentEndpoint.contains("test")) {
+            if (documentEndpoint.contains("test14")) {
                 return Arrays.asList("North Central US", "West US", "East Asia");
             } else {
-                return Arrays.asList("West US 2", "East US 2", "North Central US");
+                return Arrays.asList("North Central US", "West US 2", "Central US");
             }
         }
     }
