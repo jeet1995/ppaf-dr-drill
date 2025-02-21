@@ -1,9 +1,11 @@
 package org.example;
 
+import com.azure.cosmos.ConnectionMode;
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 
 import java.time.Duration;
+import java.util.Locale;
 
 public class Configuration {
 
@@ -48,6 +50,15 @@ public class Configuration {
 
     @Parameter(names = "-shouldLogCosmosDiagnosticsForSuccessfulResponse", description = "A boolean parameter to indicate whether the diagnostics string is logged for a successful response.", arity = 1)
     private boolean shouldLogCosmosDiagnosticsForSuccessfulResponse = false;
+
+    @Parameter(names = "-shouldExecuteReadWorkload", description = "A boolean parameter to indicate whether point read workload should be executed.", arity = 1)
+    private boolean shouldExecuteReadWorkload = false;
+
+    @Parameter(names = "-drillId", description = "An identifier to uniquely identify a DR drill.")
+    private String drillId = "";
+
+    @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
+    private ConnectionMode connectionMode = ConnectionMode.DIRECT;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return shouldLogCosmosDiagnosticsForSuccessfulResponse;
@@ -157,6 +168,37 @@ public class Configuration {
         return this;
     }
 
+    public String getDrillId() {
+        return drillId;
+    }
+
+    public Configuration setDrillId(String drillId) {
+        this.drillId = drillId;
+        return this;
+    }
+
+    public boolean isShouldLogCosmosDiagnosticsForSuccessfulResponse() {
+        return shouldLogCosmosDiagnosticsForSuccessfulResponse;
+    }
+
+    public boolean isShouldExecuteReadWorkload() {
+        return shouldExecuteReadWorkload;
+    }
+
+    public Configuration setShouldExecuteReadWorkload(boolean shouldExecuteReadWorkload) {
+        this.shouldExecuteReadWorkload = shouldExecuteReadWorkload;
+        return this;
+    }
+
+    public ConnectionMode getConnectionMode() {
+        return connectionMode;
+    }
+
+    public Configuration setConnectionMode(ConnectionMode connectionMode) {
+        this.connectionMode = connectionMode;
+        return this;
+    }
+
     static class DurationConverter implements IStringConverter<Duration> {
         @Override
         public Duration convert(String value) {
@@ -165,6 +207,25 @@ public class Configuration {
             }
 
             return Duration.parse(value);
+        }
+    }
+
+    static class ConnectionModeConverter implements IStringConverter<ConnectionMode> {
+
+        @Override
+        public ConnectionMode convert(String value) {
+            String normalizedConnectionModeAsString
+                    = value.toLowerCase(Locale.ROOT).replace(" ", "").trim();
+
+            ConnectionMode result;
+
+            if (normalizedConnectionModeAsString.equals("gateway")) {
+                result = ConnectionMode.GATEWAY;
+            } else {
+                result = ConnectionMode.DIRECT;
+            }
+
+            return result;
         }
     }
 
@@ -181,6 +242,7 @@ public class Configuration {
                 ", physicalPartitionCount=" + physicalPartitionCount +
                 ", sleepTime=" + sleepTime +
                 ", isSharedThroughput=" + isSharedThroughput +
+                ", drillId='" + drillId + '\'' +
                 '}';
     }
 }

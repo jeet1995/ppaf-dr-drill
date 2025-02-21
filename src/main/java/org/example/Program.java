@@ -1,5 +1,6 @@
 package org.example;
 
+import com.azure.cosmos.ConnectionMode;
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosAsyncContainer;
 import com.azure.cosmos.CosmosAsyncDatabase;
@@ -9,6 +10,7 @@ import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.implementation.CosmosDaemonThreadFactory;
 import com.azure.cosmos.implementation.TestConfigurations;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.ThroughputProperties;
 import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
@@ -16,12 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,22 +31,20 @@ public class Program {
 
     private static final Logger logger = LoggerFactory.getLogger(Program.class);
 
+    private static final String CREATE_OP = "create";
+    private static final String READ_OP = "read";
 
-    static {
-        LocalDateTime myDateObj = LocalDateTime.now();
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
-        String formattedDate = myDateObj.format(myFormatObj);
-
-        System.setProperty("ppafRunStart", formattedDate);
-    }
 
     public static void main(String[] args) {
         Configuration cfg = new Configuration();
 
-        long runId = Long.parseLong(System.getProperty("ppafRunStart"));
+        AtomicInteger createSuccessCount = new AtomicInteger(0);
+        AtomicInteger createFailureCount = new AtomicInteger(0);
+        AtomicInteger readSuccessCount = new AtomicInteger(0);
+        AtomicInteger readFailureCount = new AtomicInteger(0);
 
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failureCount = new AtomicInteger(0);
+        CopyOnWriteArrayList<String> successfullyPersistedIds = new CopyOnWriteArrayList<>();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
 
         logger.info("Parsing command-line args...");
 
@@ -60,22 +60,48 @@ public class Program {
         int parallelism = cfg.getNumberOfThreads();
 
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(parallelism, new CosmosDaemonThreadFactory("CosmosUpsertExecutor"));
-        ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture[parallelism];
+        ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture[2 * parallelism];
 
         String documentEndpoint = cfg.getAccountHost().isEmpty() ? TestConfigurations.HOST : cfg.getAccountHost();
         String masterKey = cfg.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : cfg.getAccountMasterKey();
+        String drillId = cfg.getDrillId();
+
+        boolean shouldIncludeReadWorkload = cfg.isShouldExecuteReadWorkload();
+
+        ConnectionMode connectionMode = cfg.getConnectionMode();
 
         logger.info("Run Configurations : {}", cfg);
 
-        try (CosmosAsyncClient cosmosAsyncClient = new CosmosClientBuilder()
-                .directMode()
-                .endpoint(documentEndpoint)
-                .key(masterKey)
-                .preferredRegions(preferredRegions)
-                .userAgentSuffix(String.valueOf(runId))
-                .buildAsyncClient()) {
+        CosmosAsyncClient cosmosAsyncClient = null;
+
+        try {
+
+            CosmosClientBuilder clientBuilder = new CosmosClientBuilder()
+                    .endpoint(documentEndpoint)
+                    .key(masterKey)
+                    .preferredRegions(preferredRegions)
+                    .userAgentSuffix(drillId);
+
+            if (connectionMode == ConnectionMode.DIRECT) {
+                clientBuilder = clientBuilder.directMode();
+            } else {
+                clientBuilder = clientBuilder.gatewayMode();
+            }
+
+            System.setProperty(
+                    "COSMOS.PARTITION_LEVEL_CIRCUIT_BREAKER_CONFIG",
+                    "{\"isPartitionLevelCircuitBreakerEnabled\": true, "
+                            + "\"circuitBreakerType\": \"CONSECUTIVE_EXCEPTION_COUNT_BASED\","
+                            + "\"consecutiveExceptionCountToleratedForReads\": 10,"
+                            + "\"consecutiveExceptionCountToleratedForWrites\": 5,"
+                            + "}");
+
+            System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "90");
+            System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "60");
 
             boolean isSharedThroughput = cfg.isSharedThroughput();
+
+            cosmosAsyncClient = clientBuilder.buildAsyncClient();
 
             if (isSharedThroughput) {
                 cosmosAsyncClient.createDatabaseIfNotExists(
@@ -101,17 +127,48 @@ public class Program {
 
             Instant startTime = Instant.now();
 
-            for (int i = 0; i < parallelism; i++) {
+            for (int i = 0; i < 2 * parallelism; i++) {
 
                 final int finalI = i;
 
-                scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
-                    try {
-                        onCreate(cosmosAsyncContainer, cfg, startTime, runDuration, finalI, successCount, failureCount);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                if (i % 2 == 0) {
+                    scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
+                        try {
+                            onCreate(
+                                    cosmosAsyncContainer,
+                                    cfg,
+                                    startTime,
+                                    runDuration,
+                                    finalI,
+                                    createSuccessCount,
+                                    createFailureCount,
+                                    successfullyPersistedIds);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, 10, TimeUnit.MILLISECONDS);
+                } else {
+
+                    if (shouldIncludeReadWorkload) {
+
+                        scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
+                            try {
+                                onRead(
+                                        cosmosAsyncContainer,
+                                        cfg,
+                                        startTime,
+                                        runDuration,
+                                        finalI,
+                                        readSuccessCount,
+                                        readFailureCount,
+                                        successfullyPersistedIds,
+                                        random);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }, 10, TimeUnit.MILLISECONDS);
                     }
-                }, 10, TimeUnit.MILLISECONDS);
+                }
             }
 
             while (!Instant.now().minus(runDuration).isAfter(startTime)) {
@@ -124,7 +181,9 @@ public class Program {
             }
 
         } finally {
-            // no-op
+            if (cosmosAsyncClient != null) {
+                cosmosAsyncClient.close();
+            }
         }
     }
 
@@ -135,14 +194,20 @@ public class Program {
             Duration runDuration,
             int scheduledFutureId,
             AtomicInteger successCount,
-            AtomicInteger failureCount) throws InterruptedException {
+            AtomicInteger failureCount,
+            CopyOnWriteArrayList<String> successfullyPersistedIds) throws InterruptedException {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
             for (int i = 0; i < 10; i++) {
+
+                Book book = Book.build();
+
                 cosmosAsyncContainer
-                        .createItem(Book.build())
+                        .createItem(book)
                         .doOnSuccess(createResponse -> {
+
+                            successfullyPersistedIds.add(book.getId());
 
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
@@ -159,6 +224,8 @@ public class Program {
                             if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
+                                        CREATE_OP,
+                                        cfg.getDrillId(),
                                         successCountSnapshot,
                                         failureCountSnapshot,
                                         scheduledFutureId,
@@ -170,6 +237,8 @@ public class Program {
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
+                                        CREATE_OP,
+                                        cfg.getDrillId(),
                                         successCountSnapshot,
                                         failureCountSnapshot,
                                         scheduledFutureId,
@@ -203,6 +272,8 @@ public class Program {
 
                                 RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
+                                        CREATE_OP,
+                                        cfg.getDrillId(),
                                         successCountSnapshot,
                                         failureCountSnapshot,
                                         scheduledFutureId,
@@ -221,4 +292,110 @@ public class Program {
             Thread.sleep(cfg.getSleepTime());
         }
     }
+
+    private static void onRead(
+            CosmosAsyncContainer cosmosAsyncContainer,
+            Configuration cfg,
+            Instant startTime,
+            Duration runDuration,
+            int scheduledFutureId,
+            AtomicInteger successCount,
+            AtomicInteger failureCount,
+            CopyOnWriteArrayList<String> successfullyCreatedIds,
+            ThreadLocalRandom random) throws InterruptedException {
+
+        while (!Instant.now().minus(runDuration).isAfter(startTime)) {
+
+            int chosenIndex = random.nextInt(successfullyCreatedIds.size());
+            String id = successfullyCreatedIds.get(chosenIndex);
+
+            for (int i = 0; i < 10; i++) {
+                cosmosAsyncContainer
+                        .readItem(id, new PartitionKey(id), Book.class)
+                        .doOnSuccess(readResponse -> {
+
+                            int successCountSnapshot = successCount.incrementAndGet();
+                            int failureCountSnapshot = failureCount.get();
+                            int statusCode = readResponse.getStatusCode();
+                            int subStatusCode = 0;
+
+                            Instant timeOfResponse = Instant.now();
+
+                            Set<String> contactedRegionNames = readResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                            String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+
+                            RequestResponseInfo requestResponseInfo;
+
+                            if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
+                                requestResponseInfo = new RequestResponseInfo(
+                                        timeOfResponse,
+                                        READ_OP,
+                                        cfg.getDrillId(),
+                                        successCountSnapshot,
+                                        failureCountSnapshot,
+                                        scheduledFutureId,
+                                        statusCode,
+                                        subStatusCode,
+                                        commaSeparatedContactedRegionNames,
+                                        readResponse.getDiagnostics().toString(),
+                                        "");
+                            } else {
+                                requestResponseInfo = new RequestResponseInfo(
+                                        timeOfResponse,
+                                        READ_OP,
+                                        cfg.getDrillId(),
+                                        successCountSnapshot,
+                                        failureCountSnapshot,
+                                        scheduledFutureId,
+                                        statusCode,
+                                        subStatusCode,
+                                        commaSeparatedContactedRegionNames,
+                                        "",
+                                        "");
+                            }
+
+                            logger.info(requestResponseInfo.toString());
+                        })
+                        .onErrorComplete(throwable -> {
+
+                            if (throwable instanceof CosmosException) {
+
+                                int successCountSnapshot = successCount.get();
+                                int failureCountSnapshot = failureCount.incrementAndGet();
+
+                                CosmosException cosmosException = (CosmosException) throwable;
+
+                                int statusCode = cosmosException.getStatusCode();
+                                int subStatusCode = cosmosException.getSubStatusCode();
+
+                                Instant timeOfResponse = Instant.now();
+
+                                CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
+
+                                Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
+                                String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+
+                                RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
+                                        timeOfResponse,
+                                        READ_OP,
+                                        cfg.getDrillId(),
+                                        successCountSnapshot,
+                                        failureCountSnapshot,
+                                        scheduledFutureId,
+                                        statusCode,
+                                        subStatusCode,
+                                        commaSeparatedContactedRegionNames,
+                                        cosmosException.getDiagnostics().toString(),
+                                        cosmosException.getMessage());
+
+                                logger.error(requestResponseInfo.toString());
+                            }
+                            return true;
+                        })
+                        .block();
+            }
+            Thread.sleep(cfg.getSleepTime());
+        }
+    }
+
 }

@@ -6,6 +6,10 @@ public class RequestResponseInfo {
 
     private final Instant timeOfResponse;
 
+    private final String operationType;
+
+    private final String drillId;
+
     private final int successCountUntilNow;
 
     private final int failureCountUntilNow;
@@ -24,6 +28,8 @@ public class RequestResponseInfo {
 
     public RequestResponseInfo(
             Instant timeOfResponse,
+            String operationType,
+            String drillId,
             int successCountUntilNow,
             int failureCountUntilNow,
             int threadId,
@@ -34,6 +40,8 @@ public class RequestResponseInfo {
             String errorMessage) {
 
         this.timeOfResponse = timeOfResponse;
+        this.operationType = operationType;
+        this.drillId = drillId;
         this.successCountUntilNow = successCountUntilNow;
         this.failureCountUntilNow = failureCountUntilNow;
         this.threadId = threadId;
@@ -50,6 +58,8 @@ public class RequestResponseInfo {
         String timeOfResponseString = timeOfResponse.toString();
 
         return "RequestResponseInfo [timeOfResponse=" + timeOfResponseString + ", " +
+                "operationType=" + operationType + ", " +
+                "drillId=" + drillId + ", " +
                 "successCountUntilNow=" + successCountUntilNow + ", " +
                 "failureCountUntilNow=" + failureCountUntilNow + ", " +
                 "threadId=" + threadId + ", " +

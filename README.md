@@ -17,15 +17,17 @@ mvn -e -Ppackage-assembly clean package
 
 -Possible Configurations
 
-| Configuration      | Configuration Description                                             | Possible values     | Defaults                    |
-|--------------------|-----------------------------------------------------------------------|---------------------|-----------------------------|
-| `accountMasterKey` | The master key associated with the account.                           | The relevant string | Setting this is compulsory. |
-| `accountHost`      | The account host URL.                                                 | The relevant string | Setting this is compulsory. |
-| `databaseName`     | The name based ID of the database                                     | Some string         | db                          |
-| `containerName`    | The name based ID of the container.                                   | Some string         | ct                          |
-| `runningTime`      | The duration the workload is to run (represented in ISO-8601 format). | Some string         | `PT3M`                      |
-| `numberOfThreads`  | The no. of parallel workers to use in the workload.                   | Positive integer    | 1                           |
-| `partitionKeyPath` | The partition key path to be used for the container.                  | `/id`               | `/id`                       |
+| Configuration               | Configuration Description                                                       | Possible values         | Defaults                    |
+|-----------------------------|---------------------------------------------------------------------------------|-------------------------|-----------------------------|
+| `accountMasterKey`          | The master key associated with the account.                                     | The relevant string     | Setting this is compulsory. |
+| `accountHost`               | The account host URL.                                                           | The relevant string     | Setting this is compulsory. |
+| `databaseName`              | The name based ID of the database                                               | Some string             | db                          |
+| `containerName`             | The name based ID of the container.                                             | Some string             | ct                          |
+| `runningTime`               | The duration the workload is to run (represented in ISO-8601 format).           | Some string             | `PT3M`                      |
+| `numberOfThreads`           | The no. of parallel workers to use in the workload.                             | Positive integer        | 1                           |
+| `shouldExecuteReadWorkload` | A boolean parameter to indicate whether point read workload should be executed. | `false` [or] `true`     | `false`                     |
+| `drillId`                   | An identifier to uniquely identify a DR drill.                                  | A non-empty string.     | An empty string.            |
+| `connectionMode`            | A parameter to denote the Connection Mode to use for the client.                | "DIRECT" [or] "GATEWAY" | "DIRECT"                    |
 
 3.2 Running the `jar`
 
@@ -33,5 +35,5 @@ mvn -e -Ppackage-assembly clean package
 - Copy-paste the JAR to the parent directory `ppaf-dr-drill-workload`
 - Run the below command
 ```
-java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -accountMasterKey "" -accountHost "" -runningTime "PT3M"
+java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -accountMasterKey "" -accountHost "" -runningTime "PT3M" -shouldExecuteReadWorkload true -drillId "2-21-2025-drill" -connectionMode "DIRECT"
 ```
