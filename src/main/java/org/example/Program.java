@@ -59,7 +59,8 @@ public class Program {
 
         int parallelism = cfg.getNumberOfThreads();
 
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(parallelism, new CosmosDaemonThreadFactory("CosmosUpsertExecutor"));
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2 * parallelism, new CosmosDaemonThreadFactory("CosmosCreateExecutor"));
+
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture[2 * parallelism];
 
         String documentEndpoint = cfg.getAccountHost().isEmpty() ? TestConfigurations.HOST : cfg.getAccountHost();
@@ -127,7 +128,7 @@ public class Program {
 
             Instant startTime = Instant.now();
 
-            for (int i = 0; i < 2 * parallelism; i++) {
+            for (int i = 0; i < scheduledFutures.length; i++) {
 
                 final int finalI = i;
 
@@ -176,8 +177,8 @@ public class Program {
 
             logger.info("Workload complete!");
 
-            for (int i = 0; i < parallelism; i++) {
-                scheduledFutures[i].cancel(true);
+            for (ScheduledFuture<?> scheduledFuture : scheduledFutures) {
+                scheduledFuture.cancel(true);
             }
 
         } finally {
@@ -305,6 +306,10 @@ public class Program {
             ThreadLocalRandom random) throws InterruptedException {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
+
+            if (successfullyCreatedIds.isEmpty()) {
+                continue;
+            }
 
             int chosenIndex = random.nextInt(successfullyCreatedIds.size());
             String id = successfullyCreatedIds.get(chosenIndex);

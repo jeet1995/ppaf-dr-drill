@@ -35,5 +35,5 @@ mvn -e -Ppackage-assembly clean package
 - Copy-paste the JAR to the parent directory `ppaf-dr-drill-workload`
 - Run the below command
 ```
-java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -accountMasterKey "" -accountHost "" -runningTime "PT3M" -shouldExecuteReadWorkload true -drillId "2-21-2025-drill" -connectionMode "DIRECT"
+java -jar ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar -accountMasterKey "" -accountHost "" -runningTime "PT3M" -shouldExecuteReadWorkload "true" -drillId "2-21-2025-drill" -connectionMode "DIRECT"
 ```

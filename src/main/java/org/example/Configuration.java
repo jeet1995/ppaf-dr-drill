@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class Configuration {
 
-    @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = true)
+    @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = false)
     private String accountMasterKey = "";
 
     // We need to pass the DocumentEndpoint in for environments higher than Test
@@ -18,7 +18,7 @@ public class Configuration {
     //   <>.documents-test.windows-int.net
     // Stage environment has document endpoint
     //   <>.documents-staging.windows-ppe.net
-    @Parameter(names = "-accountHost", description = "The account host URL.", required = true)
+    @Parameter(names = "-accountHost", description = "The account host URL.", required = false)
     private String accountHost = "";
 
     @Parameter(names = "-databaseName", description = "The database name to be used.")
@@ -52,7 +52,7 @@ public class Configuration {
     private boolean shouldLogCosmosDiagnosticsForSuccessfulResponse = false;
 
     @Parameter(names = "-shouldExecuteReadWorkload", description = "A boolean parameter to indicate whether point read workload should be executed.", arity = 1)
-    private boolean shouldExecuteReadWorkload = false;
+    private boolean shouldExecuteReadWorkload = true;
 
     @Parameter(names = "-drillId", description = "An identifier to uniquely identify a DR drill.")
     private String drillId = "";
