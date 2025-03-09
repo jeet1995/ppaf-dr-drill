@@ -40,7 +40,7 @@ public class Configuration {
     private int containerTtlInSeconds = 604800;
 
     @Parameter(names = "-physicalPartitionCount", description = "The count of physical partitions required in the target container.")
-    private int physicalPartitionCount = 10;
+    private int physicalPartitionCount = 3;
 
     @Parameter(names = "-sleepTime", description = "The duration in milliseconds between each iteration of tasks.")
     private int sleepTime = 1000;
