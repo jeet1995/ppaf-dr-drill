@@ -31,7 +31,7 @@ public class Configuration {
     private Duration runningTime = Duration.ofMinutes(30);
 
     @Parameter(names = "-numberOfThreads", description = "The no. of parallel operations to run.")
-    private int numberOfThreads = 1;
+    private int numberOfThreads = 2;
 
     @Parameter(names = "-partitionKeyPath", description = "The partition key path associated with the container.")
     private String partitionKeyPath = "/id";
@@ -58,7 +58,7 @@ public class Configuration {
     private String drillId = "";
 
     @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
-    private ConnectionMode connectionMode = ConnectionMode.DIRECT;
+    private ConnectionMode connectionMode = ConnectionMode.GATEWAY;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return shouldLogCosmosDiagnosticsForSuccessfulResponse;

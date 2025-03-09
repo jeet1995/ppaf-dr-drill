@@ -6,10 +6,13 @@ import com.azure.cosmos.CosmosAsyncContainer;
 import com.azure.cosmos.CosmosAsyncDatabase;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.cosmos.CosmosDiagnosticsContext;
+import com.azure.cosmos.CosmosEndToEndOperationLatencyPolicyConfig;
+import com.azure.cosmos.CosmosEndToEndOperationLatencyPolicyConfigBuilder;
 import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.implementation.CosmosDaemonThreadFactory;
 import com.azure.cosmos.implementation.TestConfigurations;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.ThroughputProperties;
 import com.beust.jcommander.JCommander;
@@ -34,9 +37,17 @@ public class Program {
     private static final String CREATE_OP = "create";
     private static final String READ_OP = "read";
 
+    private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
+    private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ
+            = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ);
+
+    private static final Integer MAX_ID_CACHE_SIZE = 100;
 
     public static void main(String[] args) {
         Configuration cfg = new Configuration();
+
+        Object lock = new Object();
 
         AtomicInteger createSuccessCount = new AtomicInteger(0);
         AtomicInteger createFailureCount = new AtomicInteger(0);
@@ -143,7 +154,8 @@ public class Program {
                                     finalI,
                                     createSuccessCount,
                                     createFailureCount,
-                                    successfullyPersistedIds);
+                                    successfullyPersistedIds,
+                                    lock);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
@@ -163,7 +175,8 @@ public class Program {
                                         readSuccessCount,
                                         readFailureCount,
                                         successfullyPersistedIds,
-                                        random);
+                                        random,
+                                        lock);
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
                             }
@@ -196,13 +209,21 @@ public class Program {
             int scheduledFutureId,
             AtomicInteger successCount,
             AtomicInteger failureCount,
-            CopyOnWriteArrayList<String> successfullyPersistedIds) throws InterruptedException {
+            CopyOnWriteArrayList<String> successfullyPersistedIds,
+            Object lock) throws InterruptedException {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
             for (int i = 0; i < 10; i++) {
 
                 Book book = Book.build();
+
+                synchronized (lock) {
+
+                    if (successfullyPersistedIds.size() == MAX_ID_CACHE_SIZE) {
+                        successfullyPersistedIds.remove(0);
+                    }
+                }
 
                 cosmosAsyncContainer
                         .createItem(book)
@@ -289,8 +310,9 @@ public class Program {
                             return true;
                         })
                         .block();
+
+                Thread.sleep(cfg.getSleepTime());
             }
-            Thread.sleep(cfg.getSleepTime());
         }
     }
 
@@ -303,20 +325,27 @@ public class Program {
             AtomicInteger successCount,
             AtomicInteger failureCount,
             CopyOnWriteArrayList<String> successfullyCreatedIds,
-            ThreadLocalRandom random) throws InterruptedException {
+            ThreadLocalRandom random,
+            Object lock) throws InterruptedException {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
-            if (successfullyCreatedIds.isEmpty()) {
-                continue;
-            }
+            int chosenIndex;
+            String id;
 
-            int chosenIndex = random.nextInt(successfullyCreatedIds.size());
-            String id = successfullyCreatedIds.get(chosenIndex);
+            synchronized (lock) {
+
+                if (successfullyCreatedIds.isEmpty()) {
+                    continue;
+                }
+
+                chosenIndex = random.nextInt(successfullyCreatedIds.size());
+                id = successfullyCreatedIds.get(chosenIndex);
+            }
 
             for (int i = 0; i < 10; i++) {
                 cosmosAsyncContainer
-                        .readItem(id, new PartitionKey(id), Book.class)
+                        .readItem(id, new PartitionKey(id), REQUEST_OPTIONS_FOR_READ, Book.class)
                         .doOnSuccess(readResponse -> {
 
                             int successCountSnapshot = successCount.incrementAndGet();
@@ -398,8 +427,8 @@ public class Program {
                             return true;
                         })
                         .block();
+                Thread.sleep(cfg.getSleepTime());
             }
-            Thread.sleep(cfg.getSleepTime());
         }
     }
 
