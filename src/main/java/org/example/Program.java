@@ -53,7 +53,7 @@ public class Program {
         Duration runDuration = cfg.getRunningTime();
 
         System.setProperty("COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED", "true");
-        System.setProperty("COSMOS.IS_SESSION_TOKEN_FALSE_PROGRESS_MERGE_DISABLED", "false");
+        System.setProperty("COSMOS.IS_SESSION_TOKEN_FALSE_PROGRESS_MERGE_ENABLED", "true");
 
         List<String> preferredRegions = Utils.getPreferredRegions(cfg);
 
