@@ -37,7 +37,7 @@ public class Configuration {
     private String partitionKeyPath = "/id";
 
     @Parameter(names = "-containerTtlInSeconds", description = "The TTL associated with a particular container.")
-    private int containerTtlInSeconds = 18_000;
+    private int containerTtlInSeconds = 604800;
 
     @Parameter(names = "-physicalPartitionCount", description = "The count of physical partitions required in the target container.")
     private int physicalPartitionCount = 10;
