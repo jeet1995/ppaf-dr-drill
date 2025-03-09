@@ -9,6 +9,9 @@ import com.azure.cosmos.CosmosDiagnosticsContext;
 import com.azure.cosmos.CosmosEndToEndOperationLatencyPolicyConfig;
 import com.azure.cosmos.CosmosEndToEndOperationLatencyPolicyConfigBuilder;
 import com.azure.cosmos.CosmosException;
+import com.azure.cosmos.CosmosRegionSwitchHint;
+import com.azure.cosmos.SessionRetryOptions;
+import com.azure.cosmos.SessionRetryOptionsBuilder;
 import com.azure.cosmos.implementation.CosmosDaemonThreadFactory;
 import com.azure.cosmos.implementation.TestConfigurations;
 import com.azure.cosmos.models.CosmosContainerProperties;
@@ -41,6 +44,12 @@ public class Program {
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
     private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ);
+    private static final SessionRetryOptions SESSION_RETRY_OPTIONS
+            = new SessionRetryOptionsBuilder()
+            .maxRetriesPerRegion(2)
+            .minTimeoutPerRegion(Duration.ofSeconds(10))
+            .regionSwitchHint(CosmosRegionSwitchHint.REMOTE_REGION_PREFERRED)
+            .build();
 
     private static final Integer MAX_ID_CACHE_SIZE = 100;
 
@@ -92,7 +101,8 @@ public class Program {
                     .endpoint(documentEndpoint)
                     .key(masterKey)
                     .preferredRegions(preferredRegions)
-                    .userAgentSuffix(drillId);
+                    .userAgentSuffix(drillId)
+                    .sessionRetryOptions(SESSION_RETRY_OPTIONS);
 
             if (connectionMode == ConnectionMode.DIRECT) {
                 clientBuilder = clientBuilder.directMode();
