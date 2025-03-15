@@ -40,10 +40,16 @@ public class Program {
     private static final String CREATE_OP = "create";
     private static final String READ_OP = "read";
 
+    private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(7)).build();
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
+
+    private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE
+            = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
     private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ);
+
     private static final SessionRetryOptions SESSION_RETRY_OPTIONS
             = new SessionRetryOptionsBuilder()
             .maxRetriesPerRegion(2)
@@ -118,8 +124,8 @@ public class Program {
                             + "\"consecutiveExceptionCountToleratedForWrites\": 5,"
                             + "}");
 
-            System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "90");
-            System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "60");
+            System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "35");
+            System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "25");
 
             boolean isSharedThroughput = cfg.isSharedThroughput();
 
@@ -236,7 +242,7 @@ public class Program {
                 }
 
                 cosmosAsyncContainer
-                        .createItem(book)
+                        .createItem(book, REQUEST_OPTIONS_FOR_CREATE)
                         .doOnSuccess(createResponse -> {
 
                             successfullyPersistedIds.add(book.getId());

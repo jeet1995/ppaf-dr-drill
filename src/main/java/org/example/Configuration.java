@@ -43,7 +43,7 @@ public class Configuration {
     private int physicalPartitionCount = 2;
 
     @Parameter(names = "-sleepTime", description = "The duration in milliseconds between each iteration of tasks.")
-    private int sleepTime = 1000;
+    private int sleepTime = 2000;
 
     @Parameter(names = "-isSharedThroughput", description = "A boolean parameter to indicate whether the database is a shared throughput database.", arity = 1)
     private boolean isSharedThroughput = false;
@@ -58,7 +58,7 @@ public class Configuration {
     private String drillId = "";
 
     @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
-    private ConnectionMode connectionMode = ConnectionMode.GATEWAY;
+    private ConnectionMode connectionMode = ConnectionMode.DIRECT;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return shouldLogCosmosDiagnosticsForSuccessfulResponse;
