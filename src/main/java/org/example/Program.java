@@ -21,6 +21,7 @@ import com.azure.cosmos.models.ThroughputProperties;
 import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -135,19 +136,29 @@ public class Program {
                 cosmosAsyncClient.createDatabaseIfNotExists(
                         cfg.getDatabaseName(),
                         ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                        .onErrorResume(throwable -> Mono.empty())
                         .block();
 
                 CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
 
                 CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
-                cosmosAsyncDatabase.createContainerIfNotExists(cosmosContainerProperties).block();
+                cosmosAsyncDatabase
+                        .createContainerIfNotExists(cosmosContainerProperties)
+                        .onErrorResume(throwable -> Mono.empty())
+                        .block();
             } else {
-                cosmosAsyncClient.createDatabaseIfNotExists(cfg.getDatabaseName()).block();
+                cosmosAsyncClient
+                        .createDatabaseIfNotExists(cfg.getDatabaseName())
+                        .onErrorResume(throwable -> Mono.empty())
+                        .block();
 
                 CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
 
                 CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
-                cosmosAsyncDatabase.createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000)).block();
+                cosmosAsyncDatabase
+                        .createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                        .onErrorResume(throwable -> Mono.empty())
+                        .block();
             }
 
             CosmosAsyncDatabase cosmosAsyncDatabase = cosmosAsyncClient.getDatabase(cfg.getDatabaseName());
