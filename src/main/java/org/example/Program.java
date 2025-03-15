@@ -282,7 +282,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         createResponse.getDiagnostics().toString(),
-                                        "");
+                                        "",
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -295,7 +299,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         "",
-                                        "");
+                                        "",
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -330,7 +338,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage());
+                                        cosmosException.getMessage(),
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -399,7 +411,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         readResponse.getDiagnostics().toString(),
-                                        "");
+                                        "",
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -412,7 +428,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         "",
-                                        "");
+                                        "",
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -447,7 +467,11 @@ public class Program {
                                         subStatusCode,
                                         commaSeparatedContactedRegionNames,
                                         cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage());
+                                        cosmosException.getMessage(),
+                                        cfg.getConnectionMode().name(),
+                                        cfg.getContainerName(),
+                                        cfg.getAccountHost(),
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
 
                                 logger.error(requestResponseInfo.toString());
                             }

@@ -26,6 +26,14 @@ public class RequestResponseInfo {
 
     private final String errorMessage;
 
+    private final String connectionModeAsStr;
+
+    private final String containerName;
+
+    private final String accountName;
+
+    private final boolean possiblyColdStartClient;
+
     public RequestResponseInfo(
             Instant timeOfResponse,
             String operationType,
@@ -37,7 +45,11 @@ public class RequestResponseInfo {
             int subStatusCode,
             String commaSeparatedContactedRegions,
             String cosmosDiagnosticsContext,
-            String errorMessage) {
+            String errorMessage,
+            String connectionModeAsStr,
+            String containerName,
+            String accountName,
+            boolean possiblyColdStartClient) {
 
         this.timeOfResponse = timeOfResponse;
         this.operationType = operationType;
@@ -50,6 +62,10 @@ public class RequestResponseInfo {
         this.commaSeparatedContactedRegions = commaSeparatedContactedRegions;
         this.cosmosDiagnosticsContext = cosmosDiagnosticsContext;
         this.errorMessage = errorMessage;
+        this.connectionModeAsStr = connectionModeAsStr;
+        this.containerName = containerName;
+        this.accountName = accountName;
+        this.possiblyColdStartClient = possiblyColdStartClient;
     }
 
     @Override
@@ -67,6 +83,10 @@ public class RequestResponseInfo {
                 "subStatusCode=" + subStatusCode + ", " +
                 "commaSeparatedContactedRegions=" + commaSeparatedContactedRegions + ", " +
                 "cosmosDiagnosticsContext=" + cosmosDiagnosticsContext + ", " +
-                "errorMessage=" + errorMessage + "]";
+                "errorMessage=" + errorMessage + ", " +
+                "connectionModeAsStr=" + connectionModeAsStr + ", " +
+                "containerName=" + containerName + ", " +
+                "accountName=" + accountName + ", " +
+                "possiblyColdStartClient=" + possiblyColdStartClient + "]";
     }
 }
