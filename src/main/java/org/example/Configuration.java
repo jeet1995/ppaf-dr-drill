@@ -22,10 +22,10 @@ public class Configuration {
     private String accountHost = "";
 
     @Parameter(names = "-databaseName", description = "The database name to be used.")
-    private String databaseName = "db";
+    private String databaseName = "db01";
 
     @Parameter(names = "-containerName", description = "The container name to be used.")
-    private String containerName = "ct";
+    private String containerName = "ct01";
 
     @Parameter(names = "-runningTime", description = "The running time of the entire workload.", converter = DurationConverter.class)
     private Duration runningTime = Duration.ofMinutes(30);
