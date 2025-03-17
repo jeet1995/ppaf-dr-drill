@@ -55,7 +55,7 @@ public class Program {
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
-            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
 
     private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
