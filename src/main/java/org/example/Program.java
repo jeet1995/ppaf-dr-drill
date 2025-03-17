@@ -35,9 +35,11 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -55,7 +57,7 @@ public class Program {
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
-            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
 
     private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
@@ -186,8 +188,8 @@ public class Program {
 
             FaultInjectionServerErrorResult faultInjectionServerErrorResult = FaultInjectionResultBuilders
                     .getResultBuilder(FaultInjectionServerErrorType.RESPONSE_DELAY)
-                    .delay(Duration.ofSeconds(5))
-                    .suppressServiceRequests(false)
+                    .delay(Duration.ofSeconds(11))
+                    .suppressServiceRequests(true)
                     .build();
 
             FaultInjectionCondition faultInjectionCondition = new FaultInjectionConditionBuilder()
@@ -196,15 +198,25 @@ public class Program {
                     .region("East US")
                     .build();
 
-            FaultInjectionRule faultInjectionRule = new FaultInjectionRuleBuilder("response-delay")
-                    .condition(faultInjectionCondition)
-                    .startDelay(Duration.ofMinutes(5))
-                    .result(faultInjectionServerErrorResult)
-                    .duration(Duration.ofMinutes(10))
-                    .build();
+            List<FaultInjectionRule> faultInjectionRules = new ArrayList<>();
+
+            if (cfg.isShouldInjectResponseDelayForReads()) {
+                // 11, 41, 71
+                for (int i = 0; i < 2; i++) {
+                    FaultInjectionRule faultInjectionRule = new FaultInjectionRuleBuilder("response-delay-" + UUID.randomUUID().toString())
+                            .condition(faultInjectionCondition)
+                            .startDelay(Duration.ofMinutes(11 + ((i) * 30)))
+                            .result(faultInjectionServerErrorResult)
+                            .duration(Duration.ofMinutes(20))
+                            .build();
+
+                    faultInjectionRules.add(faultInjectionRule);
+                }
+            }
+
 
             CosmosFaultInjectionHelper
-                    .configureFaultInjectionRules(cosmosAsyncContainer, Arrays.asList(faultInjectionRule))
+                    .configureFaultInjectionRules(cosmosAsyncContainer, faultInjectionRules)
                     .block();
 
             for (int i = 0; i < scheduledFutures.length; i++) {
