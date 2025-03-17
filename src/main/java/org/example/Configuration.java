@@ -54,6 +54,9 @@ public class Configuration {
     @Parameter(names = "-shouldExecuteReadWorkload", description = "A boolean parameter to indicate whether point read workload should be executed.", arity = 1)
     private boolean shouldExecuteReadWorkload = true;
 
+    @Parameter(names = "-shouldInjectResponseDelayForReads", description = "A boolean parameter to indicate whether point read workload should be injected with response delay.", arity = 1)
+    private boolean shouldInjectResponseDelayForReads = false;
+
     @Parameter(names = "-drillId", description = "An identifier to uniquely identify a DR drill.")
     private String drillId = "";
 
@@ -196,6 +199,15 @@ public class Configuration {
 
     public Configuration setConnectionMode(ConnectionMode connectionMode) {
         this.connectionMode = connectionMode;
+        return this;
+    }
+
+    public boolean isShouldInjectResponseDelayForReads() {
+        return shouldInjectResponseDelayForReads;
+    }
+
+    public Configuration setShouldInjectResponseDelayForReads(boolean shouldInjectResponseDelayForReads) {
+        this.shouldInjectResponseDelayForReads = shouldInjectResponseDelayForReads;
         return this;
     }
 

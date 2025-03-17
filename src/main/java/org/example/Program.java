@@ -18,6 +18,16 @@ import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.ThroughputProperties;
+import com.azure.cosmos.test.faultinjection.CosmosFaultInjectionHelper;
+import com.azure.cosmos.test.faultinjection.FaultInjectionCondition;
+import com.azure.cosmos.test.faultinjection.FaultInjectionConditionBuilder;
+import com.azure.cosmos.test.faultinjection.FaultInjectionConnectionType;
+import com.azure.cosmos.test.faultinjection.FaultInjectionOperationType;
+import com.azure.cosmos.test.faultinjection.FaultInjectionResultBuilders;
+import com.azure.cosmos.test.faultinjection.FaultInjectionRule;
+import com.azure.cosmos.test.faultinjection.FaultInjectionRuleBuilder;
+import com.azure.cosmos.test.faultinjection.FaultInjectionServerErrorResult;
+import com.azure.cosmos.test.faultinjection.FaultInjectionServerErrorType;
 import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +35,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -42,7 +53,7 @@ public class Program {
     private static final String READ_OP = "read";
 
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
-            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(7)).build();
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
 
@@ -125,6 +136,8 @@ public class Program {
                             + "\"consecutiveExceptionCountToleratedForWrites\": 5,"
                             + "}");
 
+            System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_THRESHOLD_FOR_PPAF", "5");
+            System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_TIME_WINDOW_IN_SECONDS_FOR_PPAF", "120");
             System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "35");
             System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "25");
 
@@ -165,6 +178,34 @@ public class Program {
             CosmosAsyncContainer cosmosAsyncContainer = cosmosAsyncDatabase.getContainer(cfg.getContainerName());
 
             Instant startTime = Instant.now();
+
+            // Fault Injection Setup for Reads
+            // Inject Response Delay of 5s (keep injecting for 10 minutes)
+            // Start injecting 3 minutes after workload has started
+            // Run workload for 15 minutes
+
+            FaultInjectionServerErrorResult faultInjectionServerErrorResult = FaultInjectionResultBuilders
+                    .getResultBuilder(FaultInjectionServerErrorType.RESPONSE_DELAY)
+                    .delay(Duration.ofSeconds(5))
+                    .suppressServiceRequests(false)
+                    .build();
+
+            FaultInjectionCondition faultInjectionCondition = new FaultInjectionConditionBuilder()
+                    .connectionType(cfg.getConnectionMode() == ConnectionMode.DIRECT ? FaultInjectionConnectionType.DIRECT : FaultInjectionConnectionType.GATEWAY)
+                    .operationType(FaultInjectionOperationType.READ_ITEM)
+                    .region("East US")
+                    .build();
+
+            FaultInjectionRule faultInjectionRule = new FaultInjectionRuleBuilder("response-delay")
+                    .condition(faultInjectionCondition)
+                    .startDelay(Duration.ofMinutes(5))
+                    .result(faultInjectionServerErrorResult)
+                    .duration(Duration.ofMinutes(10))
+                    .build();
+
+            CosmosFaultInjectionHelper
+                    .configureFaultInjectionRules(cosmosAsyncContainer, Arrays.asList(faultInjectionRule))
+                    .block();
 
             for (int i = 0; i < scheduledFutures.length; i++) {
 
