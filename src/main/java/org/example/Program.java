@@ -36,7 +36,6 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -107,7 +106,7 @@ public class Program {
         String masterKey = cfg.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : cfg.getAccountMasterKey();
         String drillId = cfg.getDrillId();
 
-        boolean shouldIncludeReadWorkload = cfg.isShouldExecuteReadWorkload();
+        boolean shouldIncludeReadWorkload = cfg.shouldExecuteReadWorkload();
 
         ConnectionMode connectionMode = cfg.getConnectionMode();
 
@@ -200,7 +199,7 @@ public class Program {
 
             List<FaultInjectionRule> faultInjectionRules = new ArrayList<>();
 
-            if (cfg.isShouldInjectResponseDelayForReads()) {
+            if (cfg.shouldInjectResponseDelayForReads()) {
                 // 11, 41, 71
                 for (int i = 0; i < 2; i++) {
                     FaultInjectionRule faultInjectionRule = new FaultInjectionRuleBuilder("response-delay-" + UUID.randomUUID().toString())

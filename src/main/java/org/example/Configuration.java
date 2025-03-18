@@ -72,11 +72,11 @@ public class Configuration {
     private ConnectionMode connectionMode = ConnectionMode.DIRECT;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
-        return shouldLogCosmosDiagnosticsForSuccessfulResponse;
+        return this.shouldLogCosmosDiagnosticsForSuccessfulResponse;
     }
 
     public int getSleepTime() {
-        return sleepTime;
+        return this.sleepTime;
     }
 
     public Configuration setSleepTime(int sleepTime) {
@@ -85,20 +85,15 @@ public class Configuration {
     }
 
     public boolean isSharedThroughput() {
-        return isSharedThroughput;
-    }
-
-    public Configuration setSharedThroughput(boolean sharedThroughput) {
-        isSharedThroughput = sharedThroughput;
-        return this;
+        return this.isSharedThroughput;
     }
 
     public String getAccountMasterKey() {
-        return accountMasterKey;
+        return this.accountMasterKey;
     }
 
     public String getAccountHost() {
-        return accountHost;
+        return this.accountHost;
     }
 
     public Configuration setAccountHost(String accountHost) {
@@ -107,7 +102,7 @@ public class Configuration {
     }
 
     public String getDatabaseName() {
-        return databaseName;
+        return this.databaseName;
     }
 
     public Configuration setDatabaseName(String databaseName) {
@@ -116,7 +111,7 @@ public class Configuration {
     }
 
     public String getContainerName() {
-        return containerName;
+        return this.containerName;
     }
 
     public Configuration setContainerName(String containerName) {
@@ -125,7 +120,7 @@ public class Configuration {
     }
 
     public Duration getRunningTime() {
-        return runningTime;
+        return this.runningTime;
     }
 
     public Configuration setRunningTime(Duration runningTime) {
@@ -134,7 +129,7 @@ public class Configuration {
     }
 
     public int getNumberOfThreads() {
-        return numberOfThreads;
+        return this.numberOfThreads;
     }
 
     public Configuration setNumberOfThreads(int numberOfThreads) {
@@ -143,7 +138,7 @@ public class Configuration {
     }
 
     public String getPartitionKeyPath() {
-        return partitionKeyPath;
+        return this.partitionKeyPath;
     }
 
     public Configuration setPartitionKeyPath(String partitionKeyPath) {
@@ -152,7 +147,7 @@ public class Configuration {
     }
 
     public int getContainerTtlInSeconds() {
-        return containerTtlInSeconds;
+        return this.containerTtlInSeconds;
     }
 
     public Configuration setContainerTtlInSeconds(int containerTtlInSeconds) {
@@ -161,7 +156,7 @@ public class Configuration {
     }
 
     public int getPhysicalPartitionCount() {
-        return physicalPartitionCount;
+        return this.physicalPartitionCount;
     }
 
     public Configuration setPhysicalPartitionCount(int physicalPartitionCount) {
@@ -170,15 +165,15 @@ public class Configuration {
     }
 
     public String getDrillId() {
-        return drillId;
+        return this.drillId;
     }
 
-    public boolean isShouldExecuteReadWorkload() {
-        return shouldExecuteReadWorkload;
+    public boolean shouldExecuteReadWorkload() {
+        return this.shouldExecuteReadWorkload;
     }
 
     public ConnectionMode getConnectionMode() {
-        return connectionMode;
+        return this.connectionMode;
     }
 
     public Configuration setConnectionMode(ConnectionMode connectionMode) {
@@ -186,8 +181,8 @@ public class Configuration {
         return this;
     }
 
-    public boolean isShouldInjectResponseDelayForReads() {
-        return shouldInjectResponseDelayForReads;
+    public boolean shouldInjectResponseDelayForReads() {
+        return this.shouldInjectResponseDelayForReads;
     }
 
     static class DurationConverter implements IStringConverter<Duration> {
