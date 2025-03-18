@@ -5,9 +5,17 @@ import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class Configuration {
+
+    // Get current date and time in UTC
+    ZonedDateTime utcTime = ZonedDateTime.now(ZoneId.of("UTC"));
+    // Define the date format
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = false)
     private String accountMasterKey = "";
@@ -58,18 +66,13 @@ public class Configuration {
     private boolean shouldInjectResponseDelayForReads = false;
 
     @Parameter(names = "-drillId", description = "An identifier to uniquely identify a DR drill.")
-    private String drillId = "";
+    private String drillId = utcTime.format(formatter);;
 
     @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
     private ConnectionMode connectionMode = ConnectionMode.DIRECT;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return shouldLogCosmosDiagnosticsForSuccessfulResponse;
-    }
-
-    public Configuration setShouldLogCosmosDiagnosticsForSuccessfulResponse(boolean shouldLogCosmosDiagnosticsForSuccessfulResponse) {
-        this.shouldLogCosmosDiagnosticsForSuccessfulResponse = shouldLogCosmosDiagnosticsForSuccessfulResponse;
-        return this;
     }
 
     public int getSleepTime() {
@@ -92,11 +95,6 @@ public class Configuration {
 
     public String getAccountMasterKey() {
         return accountMasterKey;
-    }
-
-    public Configuration setAccountMasterKey(String accountMasterKey) {
-        this.accountMasterKey = accountMasterKey;
-        return this;
     }
 
     public String getAccountHost() {
@@ -175,22 +173,8 @@ public class Configuration {
         return drillId;
     }
 
-    public Configuration setDrillId(String drillId) {
-        this.drillId = drillId;
-        return this;
-    }
-
-    public boolean isShouldLogCosmosDiagnosticsForSuccessfulResponse() {
-        return shouldLogCosmosDiagnosticsForSuccessfulResponse;
-    }
-
     public boolean isShouldExecuteReadWorkload() {
         return shouldExecuteReadWorkload;
-    }
-
-    public Configuration setShouldExecuteReadWorkload(boolean shouldExecuteReadWorkload) {
-        this.shouldExecuteReadWorkload = shouldExecuteReadWorkload;
-        return this;
     }
 
     public ConnectionMode getConnectionMode() {
@@ -204,11 +188,6 @@ public class Configuration {
 
     public boolean isShouldInjectResponseDelayForReads() {
         return shouldInjectResponseDelayForReads;
-    }
-
-    public Configuration setShouldInjectResponseDelayForReads(boolean shouldInjectResponseDelayForReads) {
-        this.shouldInjectResponseDelayForReads = shouldInjectResponseDelayForReads;
-        return this;
     }
 
     static class DurationConverter implements IStringConverter<Duration> {

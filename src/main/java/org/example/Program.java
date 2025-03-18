@@ -57,7 +57,7 @@ public class Program {
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
     private static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
-            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(10)).build();
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
 
     private static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
@@ -140,8 +140,8 @@ public class Program {
 
             System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_THRESHOLD_FOR_PPAF", "5");
             System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_TIME_WINDOW_IN_SECONDS_FOR_PPAF", "120");
-            System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "35");
-            System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "25");
+            System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "300");
+            System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "300");
 
             boolean isSharedThroughput = cfg.isSharedThroughput();
 
