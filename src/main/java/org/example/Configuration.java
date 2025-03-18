@@ -13,9 +13,9 @@ import java.util.Locale;
 public class Configuration {
 
     // Get current date and time in UTC
-    ZonedDateTime utcTime = ZonedDateTime.now(ZoneId.of("UTC"));
+    private static final ZonedDateTime UTC_TIME = ZonedDateTime.now(ZoneId.of("UTC"));
     // Define the date format
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = false)
     private String accountMasterKey = "";
@@ -66,7 +66,7 @@ public class Configuration {
     private boolean shouldInjectResponseDelayForReads = false;
 
     @Parameter(names = "-drillId", description = "An identifier to uniquely identify a DR drill.")
-    private String drillId = utcTime.format(formatter);;
+    private String drillId = UTC_TIME.format(FORMATTER);;
 
     @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
     private ConnectionMode connectionMode = ConnectionMode.DIRECT;
