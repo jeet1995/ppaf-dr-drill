@@ -71,6 +71,12 @@ public class Configuration {
     @Parameter(names = "-connectionMode", description = "A parameter to denote the Connection Mode to use for the client.", converter = ConnectionModeConverter.class)
     private ConnectionMode connectionMode = ConnectionMode.DIRECT;
 
+    @Parameter(names = "-drillWorkloadType", description = "An identifier to denote whether this is a Session Consistency specific PPAF drill or Generic PPAF drill.", converter = WorkloadTypeConverter.class)
+    private WorkloadType drillWorkloadType = WorkloadType.PPAFDrillWorkload;
+
+    @Parameter(names = "-shouldUseSessionTokenOnRequestOptions", description = "A boolean parameter to indicate whether session token should be used with request options.", arity = 1)
+    private boolean shouldUseSessionTokenOnRequestOptions = false;
+
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return this.shouldLogCosmosDiagnosticsForSuccessfulResponse;
     }
@@ -185,6 +191,14 @@ public class Configuration {
         return this.shouldInjectResponseDelayForReads;
     }
 
+    public WorkloadType getDrillWorkloadType() {
+        return this.drillWorkloadType;
+    }
+
+    public boolean shouldUseSessionTokenOnRequestOptions() {
+        return this.shouldUseSessionTokenOnRequestOptions;
+    }
+
     static class DurationConverter implements IStringConverter<Duration> {
         @Override
         public Duration convert(String value) {
@@ -212,6 +226,23 @@ public class Configuration {
             }
 
             return result;
+        }
+    }
+
+    static class WorkloadTypeConverter implements IStringConverter<WorkloadType> {
+
+        @Override
+        public WorkloadType convert(String value) {
+
+            if (value == null || value.isEmpty()) {
+                return WorkloadType.PPAFDrillWorkload;
+            }
+
+            if (value.toLowerCase(Locale.ROOT).equals("ppafdrillworkload")) {
+                return WorkloadType.PPAFDrillWorkload;
+            }
+
+            return WorkloadType.PPAFForSessionConsistencyWorkload;
         }
     }
 

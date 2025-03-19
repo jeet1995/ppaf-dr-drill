@@ -43,6 +43,10 @@ public class Book {
                 guid);
     }
 
+    public static Book build(String id) {
+        return new Book(id, id, id, id, id, id, id, id, id, id, id, id);
+    }
+
     public String getId() {
         return id;
     }
