@@ -125,7 +125,7 @@ public class PPAFForSessionConsistencyWorkload implements Workload {
 
             CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
             cosmosAsyncDatabase
-                    .createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                    .createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getProvisionedThroughput()))
                     .onErrorResume(throwable -> Mono.empty())
                     .block();
 

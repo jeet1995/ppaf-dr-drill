@@ -47,8 +47,8 @@ public class Configuration {
     @Parameter(names = "-containerTtlInSeconds", description = "The TTL associated with a particular container.")
     private int containerTtlInSeconds = 604800;
 
-    @Parameter(names = "-physicalPartitionCount", description = "The count of physical partitions required in the target container.")
-    private int physicalPartitionCount = 2;
+    @Parameter(names = "-provisionedThroughput", description = "The manual provisioned throughput for the target container.")
+    private int provisionedThroughput = 4000;
 
     @Parameter(names = "-sleepTime", description = "The duration in milliseconds between each iteration of tasks.")
     private int sleepTime = 2000;
@@ -161,12 +161,12 @@ public class Configuration {
         return this;
     }
 
-    public int getPhysicalPartitionCount() {
-        return this.physicalPartitionCount;
+    public int getProvisionedThroughput() {
+        return this.provisionedThroughput;
     }
 
-    public Configuration setPhysicalPartitionCount(int physicalPartitionCount) {
-        this.physicalPartitionCount = physicalPartitionCount;
+    public Configuration setProvisionedThroughput(int provisionedThroughput) {
+        this.provisionedThroughput = provisionedThroughput;
         return this;
     }
 
@@ -256,7 +256,7 @@ public class Configuration {
                 ", numberOfThreads=" + numberOfThreads +
                 ", partitionKeyPath='" + partitionKeyPath + '\'' +
                 ", containerTtlInSeconds=" + containerTtlInSeconds +
-                ", physicalPartitionCount=" + physicalPartitionCount +
+                ", provisionedThroughput=" + provisionedThroughput +
                 ", sleepTime=" + sleepTime +
                 ", isSharedThroughput=" + isSharedThroughput +
                 ", drillId='" + drillId + '\'' +

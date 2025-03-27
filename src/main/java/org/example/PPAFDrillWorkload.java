@@ -112,7 +112,7 @@ public class PPAFDrillWorkload implements Workload {
             if (isSharedThroughput) {
                 cosmosAsyncClient.createDatabaseIfNotExists(
                                 cfg.getDatabaseName(),
-                                ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                                ThroughputProperties.createManualThroughput(cfg.getProvisionedThroughput()))
                         .onErrorResume(throwable -> Mono.empty())
                         .block();
 
@@ -133,7 +133,7 @@ public class PPAFDrillWorkload implements Workload {
 
                 CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(cfg.getContainerName(), cfg.getPartitionKeyPath());
                 cosmosAsyncDatabase
-                        .createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getPhysicalPartitionCount() * 10_000))
+                        .createContainerIfNotExists(cosmosContainerProperties, ThroughputProperties.createManualThroughput(cfg.getProvisionedThroughput()))
                         .onErrorResume(throwable -> Mono.empty())
                         .block();
             }
