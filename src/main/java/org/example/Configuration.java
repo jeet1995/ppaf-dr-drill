@@ -77,6 +77,9 @@ public class Configuration {
     @Parameter(names = "-shouldUseSessionTokenOnRequestOptions", description = "A boolean parameter to indicate whether session token should be used with request options.", arity = 1)
     private boolean shouldUseSessionTokenOnRequestOptions = false;
 
+    @Parameter(names = "-shouldHaveE2ETimeoutForWrites", description = "A boolean parameter to indicate whether writes should have e2e timeout set.", arity = 1)
+    private boolean shouldHaveE2ETimeoutForWrites = false;
+
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return this.shouldLogCosmosDiagnosticsForSuccessfulResponse;
     }
@@ -197,6 +200,10 @@ public class Configuration {
 
     public boolean shouldUseSessionTokenOnRequestOptions() {
         return this.shouldUseSessionTokenOnRequestOptions;
+    }
+
+    public boolean shouldWritesHaveE2ETimeout() {
+        return shouldHaveE2ETimeoutForWrites;
     }
 
     static class DurationConverter implements IStringConverter<Duration> {
