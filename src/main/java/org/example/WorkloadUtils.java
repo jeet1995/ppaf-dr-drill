@@ -33,7 +33,7 @@ public class WorkloadUtils {
     public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
     public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
-            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(6)).build();
 
     public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE_WO_E2E_TIMEOUT
             = new CosmosItemRequestOptions();
@@ -81,7 +81,7 @@ public class WorkloadUtils {
                 }
 
                 cosmosAsyncContainer
-                        .createItem(book, cfg.shouldWritesHaveE2ETimeout() ? REQUEST_OPTIONS_FOR_CREATE_WO_E2E_TIMEOUT : REQUEST_OPTIONS_FOR_CREATE_WITH_E2E_TIMEOUT)
+                        .createItem(book, cfg.shouldWritesHaveE2ETimeout() ? REQUEST_OPTIONS_FOR_CREATE_WITH_E2E_TIMEOUT : REQUEST_OPTIONS_FOR_CREATE_WO_E2E_TIMEOUT)
                         .doOnSuccess(createResponse -> {
 
                             successfullyPersistedIds.add(book.getId());
