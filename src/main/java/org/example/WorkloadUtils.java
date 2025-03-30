@@ -114,7 +114,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -131,7 +132,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -170,7 +172,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -234,7 +237,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -251,7 +255,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -294,7 +299,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -367,7 +373,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -384,7 +391,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -423,7 +431,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -488,7 +497,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -505,7 +515,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -544,7 +555,8 @@ public class WorkloadUtils {
                                         cfg.getConnectionMode().name(),
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0);
+                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
+                                        cfg.getDatabaseName());
 
                                 logger.error(requestResponseInfo.toString());
                             }

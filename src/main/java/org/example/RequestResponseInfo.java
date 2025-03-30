@@ -34,6 +34,8 @@ public class RequestResponseInfo {
 
     private final boolean possiblyColdStartClient;
 
+    private final String databaseName;
+
     public RequestResponseInfo(
             Instant timeOfResponse,
             String operationType,
@@ -49,7 +51,8 @@ public class RequestResponseInfo {
             String connectionModeAsStr,
             String containerName,
             String accountName,
-            boolean possiblyColdStartClient) {
+            boolean possiblyColdStartClient,
+            String databaseName) {
 
         this.timeOfResponse = timeOfResponse;
         this.operationType = operationType;
@@ -66,6 +69,7 @@ public class RequestResponseInfo {
         this.containerName = containerName;
         this.accountName = accountName;
         this.possiblyColdStartClient = possiblyColdStartClient;
+        this.databaseName = databaseName;
     }
 
     @Override
@@ -87,6 +91,7 @@ public class RequestResponseInfo {
                 "connectionModeAsStr=" + connectionModeAsStr + ", " +
                 "containerName=" + containerName + ", " +
                 "accountName=" + accountName + ", " +
-                "possiblyColdStartClient=" + possiblyColdStartClient + "]";
+                "possiblyColdStartClient=" + possiblyColdStartClient +
+                "databaseName=" + databaseName + "]";
     }
 }
