@@ -91,7 +91,7 @@ public class RequestResponseInfo {
                 "connectionModeAsStr=" + connectionModeAsStr + ", " +
                 "containerName=" + containerName + ", " +
                 "accountName=" + accountName + ", " +
-                "possiblyColdStartClient=" + possiblyColdStartClient +
+                "possiblyColdStartClient=" + possiblyColdStartClient + ", " +
                 "databaseName=" + databaseName + "]";
     }
 }
