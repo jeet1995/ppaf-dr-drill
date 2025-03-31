@@ -92,6 +92,7 @@ public class WorkloadUtils {
                             int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
+                            Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                             Set<String> contactedRegionNames = createResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
                             String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
@@ -115,7 +116,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -133,7 +135,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -151,6 +154,7 @@ public class WorkloadUtils {
                                 int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
+                                Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                                 CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
 
@@ -173,7 +177,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -213,6 +218,7 @@ public class WorkloadUtils {
                             int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
+                            Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                             Set<String> contactedRegionNames = createResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
                             String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
@@ -238,7 +244,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -256,7 +263,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -278,6 +286,7 @@ public class WorkloadUtils {
                                 int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
+                                Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                                 CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
 
@@ -300,7 +309,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -327,22 +337,20 @@ public class WorkloadUtils {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
-            int chosenIndex;
-            String id;
+            for (int i = 0; i < 10; i++) {
 
-            synchronized (lock) {
+                String idToRead;
 
-                if (successfullyCreatedIds.isEmpty()) {
-                    continue;
+                synchronized (lock) {
+                    if (successfullyCreatedIds.isEmpty()) {
+                        continue;
+                    }
+
+                    idToRead = successfullyCreatedIds.get(random.nextInt(successfullyCreatedIds.size()));
                 }
 
-                chosenIndex = random.nextInt(successfullyCreatedIds.size());
-                id = successfullyCreatedIds.get(chosenIndex);
-            }
-
-            for (int i = 0; i < 10; i++) {
                 cosmosAsyncContainer
-                        .readItem(id, new PartitionKey(id), REQUEST_OPTIONS_FOR_READ, Book.class)
+                        .readItem(idToRead, new PartitionKey(idToRead), REQUEST_OPTIONS_FOR_READ, Book.class)
                         .doOnSuccess(readResponse -> {
 
                             int successCountSnapshot = successCount.incrementAndGet();
@@ -351,6 +359,7 @@ public class WorkloadUtils {
                             int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
+                            Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                             Set<String> contactedRegionNames = readResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
                             String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
@@ -374,7 +383,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -392,7 +402,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -410,6 +421,7 @@ public class WorkloadUtils {
                                 int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
+                                Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                                 CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
 
@@ -432,13 +444,15 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
 
                                 logger.error(requestResponseInfo.toString());
                             }
                             return true;
                         })
                         .block();
+
                 Thread.sleep(cfg.getSleepTime());
             }
         }
@@ -457,16 +471,17 @@ public class WorkloadUtils {
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 1; i++) {
 
-                CosmosItemRequestOptions readItemRequestOptions = new CosmosItemRequestOptions();
+                CosmosItemRequestOptions requestOptions = new CosmosItemRequestOptions()
+                        .setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ);
 
                 if (cfg.shouldUseSessionTokenOnRequestOptions()) {
-                    readItemRequestOptions.setSessionToken(sessionTokenFromLatestCreate.get());
+                    requestOptions.setSessionToken(sessionTokenFromLatestCreate.get());
                 }
 
                 cosmosAsyncContainer
-                        .readItem(designatedIdToRead, new PartitionKey(designatedIdToRead), readItemRequestOptions, Book.class)
+                        .readItem(designatedIdToRead, new PartitionKey(designatedIdToRead), requestOptions, Book.class)
                         .doOnSuccess(readResponse -> {
 
                             int successCountSnapshot = successCount.incrementAndGet();
@@ -475,6 +490,7 @@ public class WorkloadUtils {
                             int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
+                            Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                             Set<String> contactedRegionNames = readResponse.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
                             String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
@@ -498,7 +514,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             } else {
                                 requestResponseInfo = new RequestResponseInfo(
                                         timeOfResponse,
@@ -516,7 +533,8 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -534,6 +552,7 @@ public class WorkloadUtils {
                                 int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
+                                Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
                                 CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
 
@@ -556,13 +575,15 @@ public class WorkloadUtils {
                                         cfg.getContainerName(),
                                         cfg.getAccountHost(),
                                         runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName());
+                                        cfg.getDatabaseName(),
+                                        remainingTime);
 
                                 logger.error(requestResponseInfo.toString());
                             }
                             return true;
                         })
                         .block();
+
                 Thread.sleep(cfg.getSleepTime());
             }
         }

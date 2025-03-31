@@ -1,5 +1,6 @@
 package org.example;
 
+import java.time.Duration;
 import java.time.Instant;
 
 public class RequestResponseInfo {
@@ -36,6 +37,8 @@ public class RequestResponseInfo {
 
     private final String databaseName;
 
+    private final Duration runTimeRemaining;
+
     public RequestResponseInfo(
             Instant timeOfResponse,
             String operationType,
@@ -52,7 +55,8 @@ public class RequestResponseInfo {
             String containerName,
             String accountName,
             boolean possiblyColdStartClient,
-            String databaseName) {
+            String databaseName,
+            Duration runTimeRemaining) {
 
         this.timeOfResponse = timeOfResponse;
         this.operationType = operationType;
@@ -70,11 +74,11 @@ public class RequestResponseInfo {
         this.accountName = accountName;
         this.possiblyColdStartClient = possiblyColdStartClient;
         this.databaseName = databaseName;
+        this.runTimeRemaining = runTimeRemaining;
     }
 
     @Override
     public String toString() {
-
         String timeOfResponseString = timeOfResponse.toString();
 
         return "RequestResponseInfo [timeOfResponse=" + timeOfResponseString + ", " +
@@ -92,6 +96,7 @@ public class RequestResponseInfo {
                 "containerName=" + containerName + ", " +
                 "accountName=" + accountName + ", " +
                 "possiblyColdStartClient=" + possiblyColdStartClient + ", " +
-                "databaseName=" + databaseName + "]";
+                "databaseName=" + databaseName + ", " +
+                "runTimeRemaining=" + runTimeRemaining + "]";
     }
 }
