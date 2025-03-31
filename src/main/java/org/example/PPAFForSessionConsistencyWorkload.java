@@ -181,13 +181,29 @@ public class PPAFForSessionConsistencyWorkload implements Workload {
                 }
             }
 
-            while (!Instant.now().minus(runDuration).isAfter(startTime)) {}
+            try {
+                // Schedule a task to run after runDuration
+                scheduledThreadPoolExecutor.schedule(() -> {
+                    logger.info("Workload duration completed, shutting down...");
+                    // Cancel all scheduled tasks
+                    for (ScheduledFuture<?> scheduledFuture : scheduledFutures) {
+                        scheduledFuture.cancel(true);
+                    }
+                    // Initiate shutdown of the executor
+                    scheduledThreadPoolExecutor.shutdown();
+                }, runDuration.toMillis(), TimeUnit.MILLISECONDS);
+
+                // Wait for all tasks to complete or timeout
+                if (!scheduledThreadPoolExecutor.awaitTermination(runDuration.toMillis() + 5000, TimeUnit.MILLISECONDS)) {
+                    logger.warn("Some tasks did not complete before the timeout. Force shutting down...");
+                    scheduledThreadPoolExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                logger.error("Workload was interrupted", e);
+                Thread.currentThread().interrupt();
+            }
 
             logger.info("Workload complete!");
-
-            for (ScheduledFuture<?> scheduledFuture : scheduledFutures) {
-                scheduledFuture.cancel(true);
-            }
 
         } finally {
 
