@@ -144,7 +144,7 @@ public class PPAFForSessionConsistencyWorkload implements Workload {
             AtomicInteger failureCount,
             AtomicBoolean isFailureDetected,
             AtomicReference<String> sessionToken) {
-        
+
         return executor.schedule(() -> {
             try {
                 WorkloadUtils.onCreateStopOnFirstFailure(
@@ -166,7 +166,7 @@ public class PPAFForSessionConsistencyWorkload implements Workload {
             AtomicInteger successCount,
             AtomicInteger failureCount,
             AtomicReference<String> sessionToken) {
-        
+
         return executor.schedule(() -> {
             try {
                 WorkloadUtils.onSessionRead(

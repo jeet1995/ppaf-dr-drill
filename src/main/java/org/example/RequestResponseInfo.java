@@ -39,6 +39,8 @@ public class RequestResponseInfo {
 
     private final Duration runTimeRemaining;
 
+    private final String latestRecordedSessionToken;
+
     private RequestResponseInfo(Builder builder) {
         this.timeOfResponse = builder.timeOfResponse;
         this.operationType = builder.operationType;
@@ -57,6 +59,7 @@ public class RequestResponseInfo {
         this.possiblyColdStartClient = builder.possiblyColdStartClient;
         this.databaseName = builder.databaseName;
         this.runTimeRemaining = builder.runTimeRemaining;
+        this.latestRecordedSessionToken = builder.latestRecordedSessionToken;
     }
 
     // Getters
@@ -77,6 +80,7 @@ public class RequestResponseInfo {
     public boolean isPossiblyColdStartClient() { return possiblyColdStartClient; }
     public String getDatabaseName() { return databaseName; }
     public Duration getRunTimeRemaining() { return runTimeRemaining; }
+    public String getLatestRecordedSessionToken() { return latestRecordedSessionToken; }
 
     public static Builder builder() {
         return new Builder();
@@ -100,6 +104,7 @@ public class RequestResponseInfo {
         private boolean possiblyColdStartClient;
         private String databaseName;
         private Duration runTimeRemaining;
+        private String latestRecordedSessionToken;
 
         private Builder() {}
 
@@ -213,6 +218,11 @@ public class RequestResponseInfo {
             return this;
         }
 
+        public Builder latestRecordedSessionToken(String latestRecordedSessionToken) {
+            this.latestRecordedSessionToken = latestRecordedSessionToken;
+            return this;
+        }
+
         public RequestResponseInfo build() {
             validateRequiredFields();
             return new RequestResponseInfo(this);
@@ -275,6 +285,7 @@ public class RequestResponseInfo {
                 "accountName=" + accountName + ", " +
                 "possiblyColdStartClient=" + possiblyColdStartClient + ", " +
                 "databaseName=" + databaseName + ", " +
-                "runTimeRemaining=" + runTimeRemaining + "]";
+                "runTimeRemaining=" + runTimeRemaining + ", " +
+                "latestRecordedSessionToken=" + latestRecordedSessionToken + "]";
     }
 }
