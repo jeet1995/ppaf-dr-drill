@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,28 +40,15 @@ public class PPAFForSessionConsistencyWorkload implements Workload {
 
     private static final Book DESIGNATED_BOOK = Book.build("1");
 
-    // Cosmos DB SDK Requirements:
-    //  1. Create should have E2E timeout of 5s
-    //  2. Create should run until first availability error
-    //  3. Reads should continue running
-    //  4. Apply customer applied PPCB override and not implicit override through PPAF
-    // Cosmos DB account Requirements
-    //  1. Session Consistency Single-Region Multi-Write account
-    //  2. Use a single-partition container - start with 3000 RUs
     @Override
     public void execute(Configuration cfg) {
-        Object lock = new Object();
-
         AtomicInteger createSuccessCount = new AtomicInteger(0);
         AtomicInteger createFailureCount = new AtomicInteger(0);
         AtomicInteger readSuccessCount = new AtomicInteger(0);
         AtomicInteger readFailureCount = new AtomicInteger(0);
         AtomicBoolean isFailureDetectedOnCreate = new AtomicBoolean(false);
         AtomicReference<String> latestRecordedSessionTokenFromLatestCreate = new AtomicReference<>("");
-
-        CopyOnWriteArrayList<String> successfullyPersistedIds = new CopyOnWriteArrayList<>();
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-
+        
         Duration runDuration = cfg.getRunningTime();
 
         List<String> preferredRegions = Utils.getPreferredRegions(cfg);
