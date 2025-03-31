@@ -89,7 +89,6 @@ public class WorkloadUtils {
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
                             int statusCode = createResponse.getStatusCode();
-                            int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
                             Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -100,43 +99,37 @@ public class WorkloadUtils {
                             RequestResponseInfo requestResponseInfo;
 
                             if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        createResponse.getDiagnostics().toString(),
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, createResponse.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             } else {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        "",
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, "")
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -151,7 +144,6 @@ public class WorkloadUtils {
                                 CosmosException cosmosException = (CosmosException) throwable;
 
                                 int statusCode = cosmosException.getStatusCode();
-                                int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
                                 Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -161,24 +153,21 @@ public class WorkloadUtils {
                                 Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
                                 String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                                RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage(),
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withErrorResponse(statusCode, cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -215,7 +204,6 @@ public class WorkloadUtils {
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
                             int statusCode = createResponse.getStatusCode();
-                            int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
                             Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -228,43 +216,37 @@ public class WorkloadUtils {
                             RequestResponseInfo requestResponseInfo;
 
                             if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        createResponse.getDiagnostics().toString(),
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, createResponse.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             } else {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        "",
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, "")
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -283,7 +265,6 @@ public class WorkloadUtils {
                                 }
 
                                 int statusCode = cosmosException.getStatusCode();
-                                int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
                                 Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -293,24 +274,21 @@ public class WorkloadUtils {
                                 Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
                                 String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                                RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        CREATE_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage(),
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(CREATE_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withErrorResponse(statusCode, cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -356,7 +334,6 @@ public class WorkloadUtils {
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
                             int statusCode = readResponse.getStatusCode();
-                            int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
                             Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -367,43 +344,37 @@ public class WorkloadUtils {
                             RequestResponseInfo requestResponseInfo;
 
                             if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        readResponse.getDiagnostics().toString(),
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, readResponse.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             } else {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        "",
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, "")
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -418,7 +389,6 @@ public class WorkloadUtils {
                                 CosmosException cosmosException = (CosmosException) throwable;
 
                                 int statusCode = cosmosException.getStatusCode();
-                                int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
                                 Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -428,24 +398,21 @@ public class WorkloadUtils {
                                 Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
                                 String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                                RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage(),
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withErrorResponse(statusCode, cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
 
                                 logger.error(requestResponseInfo.toString());
                             }
@@ -487,7 +454,6 @@ public class WorkloadUtils {
                             int successCountSnapshot = successCount.incrementAndGet();
                             int failureCountSnapshot = failureCount.get();
                             int statusCode = readResponse.getStatusCode();
-                            int subStatusCode = 0;
 
                             Instant timeOfResponse = Instant.now();
                             Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -498,43 +464,37 @@ public class WorkloadUtils {
                             RequestResponseInfo requestResponseInfo;
 
                             if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        readResponse.getDiagnostics().toString(),
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, readResponse.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             } else {
-                                requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        "",
-                                        "",
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, "")
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
                             }
 
                             logger.info(requestResponseInfo.toString());
@@ -549,7 +509,6 @@ public class WorkloadUtils {
                                 CosmosException cosmosException = (CosmosException) throwable;
 
                                 int statusCode = cosmosException.getStatusCode();
-                                int subStatusCode = cosmosException.getSubStatusCode();
 
                                 Instant timeOfResponse = Instant.now();
                                 Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
@@ -559,24 +518,21 @@ public class WorkloadUtils {
                                 Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
                                 String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                                RequestResponseInfo requestResponseInfo = new RequestResponseInfo(
-                                        timeOfResponse,
-                                        READ_OP,
-                                        cfg.getDrillId(),
-                                        successCountSnapshot,
-                                        failureCountSnapshot,
-                                        scheduledFutureId,
-                                        statusCode,
-                                        subStatusCode,
-                                        commaSeparatedContactedRegionNames,
-                                        cosmosException.getDiagnostics().toString(),
-                                        cosmosException.getMessage(),
-                                        cfg.getConnectionMode().name(),
-                                        cfg.getContainerName(),
-                                        cfg.getAccountHost(),
-                                        runDuration.compareTo(Duration.ofHours(1)) < 0,
-                                        cfg.getDatabaseName(),
-                                        remainingTime);
+                                RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(READ_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withErrorResponse(statusCode, cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
 
                                 logger.error(requestResponseInfo.toString());
                             }
