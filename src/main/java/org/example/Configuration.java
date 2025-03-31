@@ -88,9 +88,8 @@ public class Configuration {
         return this.sleepTime;
     }
 
-    public Configuration setSleepTime(int sleepTime) {
+    public void setSleepTime(int sleepTime) {
         this.sleepTime = sleepTime;
-        return this;
     }
 
     public boolean isSharedThroughput() {
@@ -105,72 +104,64 @@ public class Configuration {
         return this.accountHost;
     }
 
-    public Configuration setAccountHost(String accountHost) {
+    public void setAccountHost(String accountHost) {
         this.accountHost = accountHost;
-        return this;
     }
 
     public String getDatabaseName() {
         return this.databaseName;
     }
 
-    public Configuration setDatabaseName(String databaseName) {
+    public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
-        return this;
     }
 
     public String getContainerName() {
         return this.containerName;
     }
 
-    public Configuration setContainerName(String containerName) {
+    public void setContainerName(String containerName) {
         this.containerName = containerName;
-        return this;
     }
 
     public Duration getRunningTime() {
         return this.runningTime;
     }
 
-    public Configuration setRunningTime(Duration runningTime) {
+    public void setRunningTime(Duration runningTime) {
         this.runningTime = runningTime;
-        return this;
     }
 
     public int getNumberOfThreads() {
         return this.numberOfThreads;
     }
 
-    public Configuration setNumberOfThreads(int numberOfThreads) {
+    public void setNumberOfThreads(int numberOfThreads) {
         this.numberOfThreads = numberOfThreads;
-        return this;
     }
 
     public String getPartitionKeyPath() {
         return this.partitionKeyPath;
     }
 
-    public Configuration setPartitionKeyPath(String partitionKeyPath) {
+    public void setPartitionKeyPath(String partitionKeyPath) {
         this.partitionKeyPath = partitionKeyPath;
-        return this;
     }
 
     public int getContainerTtlInSeconds() {
         return this.containerTtlInSeconds;
     }
 
-    public Configuration setContainerTtlInSeconds(int containerTtlInSeconds) {
+    public void setContainerTtlInSeconds(int containerTtlInSeconds) {
         this.containerTtlInSeconds = containerTtlInSeconds;
-        return this;
     }
 
     public int getProvisionedThroughput() {
         return this.provisionedThroughput;
     }
 
-    public Configuration setProvisionedThroughput(int provisionedThroughput) {
+    public void setProvisionedThroughput(int provisionedThroughput) {
         this.provisionedThroughput = provisionedThroughput;
-        return this;
     }
 
     public String getDrillId() {
@@ -185,9 +176,8 @@ public class Configuration {
         return this.connectionMode;
     }
 
-    public Configuration setConnectionMode(ConnectionMode connectionMode) {
+    public void setConnectionMode(ConnectionMode connectionMode) {
         this.connectionMode = connectionMode;
-        return this;
     }
 
     public boolean shouldInjectResponseDelayForReads() {
@@ -204,6 +194,59 @@ public class Configuration {
 
     public boolean shouldWritesHaveE2ETimeout() {
         return shouldHaveE2ETimeoutForWrites;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("""
+                Configuration {
+                    Database Configuration:
+                    - Database Name: %s
+                    - Container Name: %s
+                    - Partition Key Path: %s
+                    - Container TTL: %d seconds
+                    - Provisioned Throughput: %d RU/s
+                    - Shared Throughput: %b
+                    
+                    Workload Configuration:
+                    - Running Time: %s
+                    - Number of Threads: %d
+                    - Sleep Time: %d ms
+                    - Execute Read Workload: %b
+                    - Drill ID: %s
+                    - Drill Workload Type: %s
+                    
+                    Connection Configuration:
+                    - Connection Mode: %s
+                    - Account Host: %s
+                    - Account Master Key: %s
+                    
+                    Advanced Settings:
+                    - Log Cosmos Diagnostics: %b
+                    - Inject Response Delay for Reads: %b
+                    - Use Session Token: %b
+                    - E2E Timeout for Writes: %b
+                }""",
+                databaseName,
+                containerName,
+                partitionKeyPath,
+                containerTtlInSeconds,
+                provisionedThroughput,
+                isSharedThroughput,
+                runningTime,
+                numberOfThreads,
+                sleepTime,
+                shouldExecuteReadWorkload,
+                drillId,
+                drillWorkloadType,
+                connectionMode,
+                accountHost,
+                accountMasterKey.substring(0, Math.min(accountMasterKey.length(), 4)) + "...",
+                shouldLogCosmosDiagnosticsForSuccessfulResponse,
+                shouldInjectResponseDelayForReads,
+                shouldUseSessionTokenOnRequestOptions,
+                shouldHaveE2ETimeoutForWrites
+        );
     }
 
     static class DurationConverter implements IStringConverter<Duration> {
@@ -251,22 +294,5 @@ public class Configuration {
 
             return WorkloadType.PPAFForSessionConsistencyWorkload;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Configuration{" +
-                "accountHost='" + accountHost + '\'' +
-                ", databaseName='" + databaseName + '\'' +
-                ", containerName='" + containerName + '\'' +
-                ", runningTime=" + runningTime +
-                ", numberOfThreads=" + numberOfThreads +
-                ", partitionKeyPath='" + partitionKeyPath + '\'' +
-                ", containerTtlInSeconds=" + containerTtlInSeconds +
-                ", provisionedThroughput=" + provisionedThroughput +
-                ", sleepTime=" + sleepTime +
-                ", isSharedThroughput=" + isSharedThroughput +
-                ", drillId='" + drillId + '\'' +
-                '}';
     }
 }
