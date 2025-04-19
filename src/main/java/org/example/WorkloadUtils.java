@@ -478,6 +478,7 @@ public class WorkloadUtils {
                                         .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
                                         .databaseName(cfg.getDatabaseName())
                                         .runTimeRemaining(remainingTime)
+                                        .latestRecordedSessionToken(sessionTokenFromLatestCreate.get())
                                         .build();
                             } else {
                                 requestResponseInfo = RequestResponseInfo.builder()
@@ -494,6 +495,7 @@ public class WorkloadUtils {
                                         .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
                                         .databaseName(cfg.getDatabaseName())
                                         .runTimeRemaining(remainingTime)
+                                        .latestRecordedSessionToken(sessionTokenFromLatestCreate.get())
                                         .build();
                             }
 
