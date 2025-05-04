@@ -8,6 +8,7 @@ import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.CosmosRegionSwitchHint;
 import com.azure.cosmos.SessionRetryOptions;
 import com.azure.cosmos.SessionRetryOptionsBuilder;
+import com.azure.cosmos.ThresholdBasedAvailabilityStrategy;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import org.slf4j.Logger;
@@ -35,12 +36,18 @@ public class WorkloadUtils {
     public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(6)).build();
 
+    public static final ThresholdBasedAvailabilityStrategy THRESHOLD_BASED_AVAILABILITY_STRATEGY_FOR_READS
+            = new ThresholdBasedAvailabilityStrategy(Duration.ofSeconds(1), Duration.ofMillis(500));
+
+    public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_READ_WITH_AVAILABILITY_STRATEGY
+            = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(6)).availabilityStrategy(THRESHOLD_BASED_AVAILABILITY_STRATEGY_FOR_READS).build();
+
     public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE_WO_E2E_TIMEOUT
             = new CosmosItemRequestOptions();
     public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_CREATE_WITH_E2E_TIMEOUT
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
-    public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ
-            = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ);
+    public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY
+            = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ_WITH_AVAILABILITY_STRATEGY);
 
     public static final SessionRetryOptions REMOTE_REGION_PREFERRED_SESSION_RETRY_OPTIONS
             = new SessionRetryOptionsBuilder()
@@ -328,7 +335,7 @@ public class WorkloadUtils {
                 }
 
                 cosmosAsyncContainer
-                        .readItem(idToRead, new PartitionKey(idToRead), REQUEST_OPTIONS_FOR_READ, Book.class)
+                        .readItem(idToRead, new PartitionKey(idToRead), REQUEST_OPTIONS_FOR_READ_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY, Book.class)
                         .doOnSuccess(readResponse -> {
 
                             int successCountSnapshot = successCount.incrementAndGet();
