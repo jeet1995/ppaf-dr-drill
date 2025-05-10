@@ -10,6 +10,7 @@ import com.azure.cosmos.SessionRetryOptions;
 import com.azure.cosmos.SessionRetryOptionsBuilder;
 import com.azure.cosmos.ThresholdBasedAvailabilityStrategy;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
+import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class WorkloadUtils {
 
     public static final String CREATE_OP = "create";
     public static final String READ_OP = "read";
+    public static final String QUERY_OP = "query";
 
     public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
@@ -48,6 +50,8 @@ public class WorkloadUtils {
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_WRITE);
     public static final CosmosItemRequestOptions REQUEST_OPTIONS_FOR_READ_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY
             = new CosmosItemRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ_WITH_AVAILABILITY_STRATEGY);
+    public static final CosmosQueryRequestOptions REQUEST_OPTIONS_FOR_QUERY_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY
+            = new CosmosQueryRequestOptions().setCosmosEndToEndOperationLatencyPolicyConfig(E2E_POLICY_FOR_READ_WITH_AVAILABILITY_STRATEGY);
 
     public static final SessionRetryOptions REMOTE_REGION_PREFERRED_SESSION_RETRY_OPTIONS
             = new SessionRetryOptionsBuilder()
@@ -548,6 +552,132 @@ public class WorkloadUtils {
                             return true;
                         })
                         .block();
+
+                Thread.sleep(cfg.getSleepTime());
+            }
+        }
+    }
+
+    public static void onQuery(
+            CosmosAsyncContainer cosmosAsyncContainer,
+            Configuration cfg,
+            Instant startTime,
+            Duration runDuration,
+            int scheduledFutureId,
+            AtomicInteger successCount,
+            AtomicInteger failureCount,
+            CopyOnWriteArrayList<String> successfullyPersistedIds,
+            ThreadLocalRandom random,
+            Object lock) throws InterruptedException {
+
+        while (!Instant.now().minus(runDuration).isAfter(startTime)) {
+
+            for (int i = 0; i < 10; i++) {
+
+                String idToQuery;
+
+                synchronized (lock) {
+                    if (successfullyPersistedIds.isEmpty()) {
+                        continue;
+                    }
+
+                    idToQuery = successfullyPersistedIds.get(random.nextInt(successfullyPersistedIds.size()));
+                }
+
+                String query = String.format("SELECT * FROM c WHERE c.id = '%s'", idToQuery);
+
+                cosmosAsyncContainer
+                        .queryItems(query, REQUEST_OPTIONS_FOR_QUERY_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY, Book.class)
+                        .byPage()
+                        .doOnNext(feedResponse -> {
+                            int successCountSnapshot = successCount.incrementAndGet();
+                            int failureCountSnapshot = failureCount.get();
+                            int statusCode = 200; // FeedResponse doesn't have status code, assume 200 for success
+                            int subStatusCode = 0;
+
+                            Instant timeOfResponse = Instant.now();
+                            Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
+
+                            Set<String> contactedRegionNames = feedResponse.getCosmosDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                            String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+
+                            RequestResponseInfo requestResponseInfo;
+
+                            if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(QUERY_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, feedResponse.getCosmosDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
+                            } else {
+                                requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(QUERY_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withSuccessResponse(statusCode, "")
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
+                            }
+
+                            logger.info(requestResponseInfo.toString());
+                        })
+                        .onErrorComplete(throwable -> {
+                            if (throwable instanceof CosmosException) {
+                                int successCountSnapshot = successCount.get();
+                                int failureCountSnapshot = failureCount.incrementAndGet();
+
+                                CosmosException cosmosException = (CosmosException) throwable;
+
+                                int statusCode = cosmosException.getStatusCode();
+                                int subStatusCode = cosmosException.getSubStatusCode();
+
+                                Instant timeOfResponse = Instant.now();
+                                Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
+
+                                CosmosDiagnosticsContext cosmosDiagnosticsContext = cosmosException.getDiagnostics().getDiagnosticsContext();
+
+                                Set<String> contactedRegionNames = cosmosDiagnosticsContext.getContactedRegionNames();
+                                String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+
+                                RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                                        .timeOfResponse(timeOfResponse)
+                                        .operationType(QUERY_OP)
+                                        .drillId(cfg.getDrillId())
+                                        .withCounts(successCountSnapshot, failureCountSnapshot)
+                                        .threadId(scheduledFutureId)
+                                        .withErrorResponse(statusCode, cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                                        .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                        .connectionModeAsStr(cfg.getConnectionMode().name())
+                                        .containerName(cfg.getContainerName())
+                                        .accountName(cfg.getAccountHost())
+                                        .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                        .databaseName(cfg.getDatabaseName())
+                                        .runTimeRemaining(remainingTime)
+                                        .build();
+
+                                logger.error(requestResponseInfo.toString());
+                            }
+                            return true;
+                        })
+                        .subscribe();
 
                 Thread.sleep(cfg.getSleepTime());
             }

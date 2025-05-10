@@ -62,6 +62,9 @@ public class Configuration {
     @Parameter(names = "-shouldExecuteReadWorkload", description = "A boolean parameter to indicate whether point read workload should be executed.", arity = 1)
     private boolean shouldExecuteReadWorkload = true;
 
+    @Parameter(names = "-shouldExecuteQueryWorkload", description = "A boolean parameter to indicate whether query workload should be executed.", arity = 1)
+    private boolean shouldExecuteQueryWorkload = true;
+
     @Parameter(names = "-shouldInjectResponseDelayForReads", description = "A boolean parameter to indicate whether point read workload should be injected with response delay.", arity = 1)
     private boolean shouldInjectResponseDelayForReads = false;
 
@@ -172,6 +175,10 @@ public class Configuration {
         return this.shouldExecuteReadWorkload;
     }
 
+    public boolean shouldExecuteQueryWorkload() {
+        return this.shouldExecuteQueryWorkload;
+    }
+
     public ConnectionMode getConnectionMode() {
         return this.connectionMode;
     }
@@ -213,6 +220,7 @@ public class Configuration {
                     - Number of Threads: %d
                     - Sleep Time: %d ms
                     - Execute Read Workload: %b
+                    - Execute Query Workload: %b
                     - Drill ID: %s
                     - Drill Workload Type: %s
                     
@@ -237,6 +245,7 @@ public class Configuration {
                 numberOfThreads,
                 sleepTime,
                 shouldExecuteReadWorkload,
+                shouldExecuteQueryWorkload,
                 drillId,
                 drillWorkloadType,
                 connectionMode,
