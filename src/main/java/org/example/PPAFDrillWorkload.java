@@ -57,6 +57,8 @@ public class PPAFDrillWorkload implements Workload {
         AtomicInteger createFailureCount = new AtomicInteger(0);
         AtomicInteger readSuccessCount = new AtomicInteger(0);
         AtomicInteger readFailureCount = new AtomicInteger(0);
+        AtomicInteger querySuccessCount = new AtomicInteger(0);
+        AtomicInteger queryFailureCount = new AtomicInteger(0);
 
         CopyOnWriteArrayList<String> successfullyPersistedIds = new CopyOnWriteArrayList<>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -76,6 +78,7 @@ public class PPAFDrillWorkload implements Workload {
         String drillId = cfg.getDrillId();
 
         boolean shouldIncludeReadWorkload = cfg.shouldExecuteReadWorkload();
+        boolean shouldIncludeQueryWorkload = cfg.shouldExecuteQueryWorkload();
 
         ConnectionMode connectionMode = cfg.getConnectionMode();
 
@@ -182,7 +185,7 @@ public class PPAFDrillWorkload implements Workload {
 
                 final int finalI = i;
 
-                if (i % 2 == 0) {
+                if (i % 3 == 0) {
                     scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
                         try {
                             WorkloadUtils.onCreate(
@@ -199,10 +202,8 @@ public class PPAFDrillWorkload implements Workload {
                             throw new RuntimeException(e);
                         }
                     }, 10, TimeUnit.MILLISECONDS);
-                } else {
-
+                } else if (i % 3 == 1) {
                     if (shouldIncludeReadWorkload) {
-
                         scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
                             try {
                                 WorkloadUtils.onRead(
@@ -213,6 +214,26 @@ public class PPAFDrillWorkload implements Workload {
                                         finalI,
                                         readSuccessCount,
                                         readFailureCount,
+                                        successfullyPersistedIds,
+                                        random,
+                                        lock);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }, 10, TimeUnit.MILLISECONDS);
+                    }
+                } else {
+                    if (shouldIncludeQueryWorkload) {
+                        scheduledFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
+                            try {
+                                WorkloadUtils.onQuery(
+                                        cosmosAsyncContainer,
+                                        cfg,
+                                        startTime,
+                                        runDuration,
+                                        finalI,
+                                        querySuccessCount,
+                                        queryFailureCount,
                                         successfullyPersistedIds,
                                         random,
                                         lock);
