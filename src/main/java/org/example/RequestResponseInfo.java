@@ -240,9 +240,6 @@ public class RequestResponseInfo {
             if (drillId == null || drillId.trim().isEmpty()) {
                 errors.append("drillId is required\n");
             }
-            if (commaSeparatedContactedRegions == null || commaSeparatedContactedRegions.trim().isEmpty()) {
-                errors.append("commaSeparatedContactedRegions is required\n");
-            }
             if (connectionModeAsStr == null || connectionModeAsStr.trim().isEmpty()) {
                 errors.append("connectionModeAsStr is required\n");
             }
