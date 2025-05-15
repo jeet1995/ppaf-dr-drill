@@ -587,7 +587,7 @@ public class WorkloadUtils {
                 String query = String.format("SELECT * FROM c WHERE c.id = '%s'", idToQuery);
 
                 cosmosAsyncContainer
-                        .queryItems(query, REQUEST_OPTIONS_FOR_QUERY_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY, Book.class)
+                        .queryItems(query, Book.class)
                         .byPage()
                         .doOnNext(feedResponse -> {
                             int successCountSnapshot = successCount.incrementAndGet();

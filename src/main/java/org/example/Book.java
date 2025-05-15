@@ -4,11 +4,14 @@ import java.util.UUID;
 
 public class Book {
 
-    private final String id;
+    private String id;
 
-    private final String pk;
+    private String pk;
 
-    private final String foo0, foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9;
+    private String foo0, foo1, foo2, foo3, foo4, foo5, foo6, foo7, foo8, foo9;
+
+    public Book() {
+    }
 
     public Book(String id, String pk, String foo0, String foo1, String foo2, String foo3, String foo4, String foo5, String foo6, String foo7, String foo8, String foo9) {
         this.id = id;
