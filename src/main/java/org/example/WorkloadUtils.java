@@ -339,7 +339,7 @@ public class WorkloadUtils {
                 }
 
                 cosmosAsyncContainer
-                        .readItem(idToRead, new PartitionKey(idToRead), REQUEST_OPTIONS_FOR_READ_WITH_E2E_TIMEOUT_AND_AVAILABILITY_STRATEGY, Book.class)
+                        .readItem(idToRead, new PartitionKey(idToRead), Book.class)
                         .doOnSuccess(readResponse -> {
 
                             int successCountSnapshot = successCount.incrementAndGet();
