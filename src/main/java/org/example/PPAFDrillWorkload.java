@@ -40,13 +40,14 @@ public class PPAFDrillWorkload implements Workload {
 
     private static final Logger logger = LoggerFactory.getLogger(PPAFDrillWorkload.class);
     private static final List<String> CONFIGURED_SYSTEM_PROPERTIES = Arrays.asList(
-            "COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED",
             "COSMOS.IS_SESSION_TOKEN_FALSE_PROGRESS_MERGE_ENABLED",
             "COSMOS.E2E_TIMEOUT_ERROR_HIT_THRESHOLD_FOR_PPAF",
             "COSMOS.E2E_TIMEOUT_ERROR_HIT_TIME_WINDOW_IN_SECONDS_FOR_PPAF",
             "COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS",
             "COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS",
-            "COSMOS.PARTITION_LEVEL_CIRCUIT_BREAKER_CONFIG" // Implicitly set when COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED is set to true
+            "COSMOS.PARTITION_LEVEL_CIRCUIT_BREAKER_CONFIG", // Implicitly set when COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED is set to true
+            "COSMOS.THINCLIENT_ENABLED",
+            "COSMOS.HTTP2_ENABLED" // Implicitly set when COSMOS.THINCLIENT_ENABLED is set to true
     );
 
     @Override
@@ -101,12 +102,16 @@ public class PPAFDrillWorkload implements Workload {
                 clientBuilder = clientBuilder.gatewayMode();
             }
 
-            System.setProperty("COSMOS.IS_PER_PARTITION_AUTOMATIC_FAILOVER_ENABLED", "true");
             System.setProperty("COSMOS.IS_SESSION_TOKEN_FALSE_PROGRESS_MERGE_ENABLED", "true");
             System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_THRESHOLD_FOR_PPAF", "5");
             System.setProperty("COSMOS.E2E_TIMEOUT_ERROR_HIT_TIME_WINDOW_IN_SECONDS_FOR_PPAF", "120");
             System.setProperty("COSMOS.STALE_PARTITION_UNAVAILABILITY_REFRESH_INTERVAL_IN_SECONDS", "60");
             System.setProperty("COSMOS.ALLOWED_PARTITION_UNAVAILABILITY_DURATION_IN_SECONDS", "30");
+
+            if (cfg.isThinClientEnabled()) {
+                System.setProperty("COSMOS.THINCLIENT_ENABLED", "true");
+                System.setProperty("COSMOS.HTTP2_ENABLED", "true");
+            }
 
             boolean isSharedThroughput = cfg.isSharedThroughput();
 
