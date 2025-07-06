@@ -48,7 +48,7 @@ public class Configuration {
     private int containerTtlInSeconds = 604800;
 
     @Parameter(names = "-provisionedThroughput", description = "The manual provisioned throughput for the target container.")
-    private int provisionedThroughput = 4000;
+    private int provisionedThroughput = 10000;
 
     @Parameter(names = "-sleepTime", description = "The duration in milliseconds between each iteration of tasks.")
     private int sleepTime = 2000;
@@ -82,6 +82,9 @@ public class Configuration {
 
     @Parameter(names = "-shouldHaveE2ETimeoutForWrites", description = "A boolean parameter to indicate whether writes should have e2e timeout set.", arity = 1)
     private boolean shouldHaveE2ETimeoutForWrites = false;
+
+    @Parameter(names = "-isThinClientEnabled", description = "A boolean parameter to indicate whether the thin client is enabled.", arity = 1)
+    private boolean isThinClientEnabled = false;
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
         return this.shouldLogCosmosDiagnosticsForSuccessfulResponse;
@@ -202,6 +205,16 @@ public class Configuration {
     public boolean shouldWritesHaveE2ETimeout() {
         return shouldHaveE2ETimeoutForWrites;
     }
+
+
+    public boolean isThinClientEnabled() {
+        return isThinClientEnabled;
+    }
+
+    public void setThinClientEnabled(boolean thinClientEnabled) {
+        isThinClientEnabled = thinClientEnabled;
+    }
+
 
     @Override
     public String toString() {
