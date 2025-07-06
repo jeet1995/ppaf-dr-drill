@@ -111,6 +111,12 @@ public class PPAFDrillWorkload implements Workload {
             if (cfg.isThinClientEnabled()) {
                 System.setProperty("COSMOS.THINCLIENT_ENABLED", "true");
                 System.setProperty("COSMOS.HTTP2_ENABLED", "true");
+
+                if (cfg.getConnectionMode() == ConnectionMode.DIRECT) {
+                    throw new IllegalArgumentException("Thin Client is not supported in Direct Connection Mode");
+                }
+
+                clientBuilder = clientBuilder.gatewayMode();
             }
 
             boolean isSharedThroughput = cfg.isSharedThroughput();
