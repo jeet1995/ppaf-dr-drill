@@ -94,6 +94,7 @@ public class PPAFDrillWorkload implements Workload {
                     .key(masterKey)
                     .preferredRegions(preferredRegions)
                     .userAgentSuffix(drillId)
+                    .connectionSharingAcrossClientsEnabled(true)
                     .sessionRetryOptions(WorkloadUtils.REMOTE_REGION_PREFERRED_SESSION_RETRY_OPTIONS);
 
             if (connectionMode == ConnectionMode.DIRECT) {
