@@ -35,11 +35,10 @@ public class JsonConfigurationLoader {
         logger.info("Loading configuration from JSON file: {}", filePath);
         JsonNode root = OBJECT_MAPPER.readTree(file);
 
-        if (root.has("accountHost")) {
-            config.setAccountHost(root.get("accountHost").asText());
-        }
-        if (root.has("accountMasterKey")) {
-            config.setAccountMasterKey(root.get("accountMasterKey").asText());
+        // accountHost and accountMasterKey are intentionally excluded from JSON config
+        // to prevent credentials from being stored in files. They must be passed as CLI arguments.
+        if (root.has("accountHost") || root.has("accountMasterKey")) {
+            logger.warn("accountHost and accountMasterKey in JSON config are ignored — pass them as CLI arguments.");
         }
         if (root.has("databaseName")) {
             config.setDatabaseName(root.get("databaseName").asText());

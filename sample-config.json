@@ -1,6 +1,5 @@
 {
-  "accountHost": "https://your-account.documents.azure.com:443/",
-  "accountMasterKey": "your-master-key",
+  "_comment": "accountHost and accountMasterKey must be passed as CLI arguments (not supported in JSON config)",
   "databaseName": "db01",
   "containerName": "ct01",
   "partitionKeyPath": "/id",
