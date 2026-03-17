@@ -60,6 +60,8 @@ public class PPAFDrillWorkload implements Workload {
         AtomicInteger readFailureCount = new AtomicInteger(0);
         AtomicInteger querySuccessCount = new AtomicInteger(0);
         AtomicInteger queryFailureCount = new AtomicInteger(0);
+        AtomicInteger changeFeedSuccessCount = new AtomicInteger(0);
+        AtomicInteger changeFeedFailureCount = new AtomicInteger(0);
 
         CopyOnWriteArrayList<String> successfullyPersistedIds = new CopyOnWriteArrayList<>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -257,6 +259,32 @@ public class PPAFDrillWorkload implements Workload {
                 }
             }
 
+            // Schedule change feed workloads
+            boolean shouldIncludeChangeFeedWorkload = cfg.shouldExecuteChangeFeedWorkload();
+            ScheduledFuture<?>[] changeFeedFutures = new ScheduledFuture[0];
+            if (shouldIncludeChangeFeedWorkload) {
+                int changeFeedWorkers = Math.max(1, parallelism / 2);
+                changeFeedFutures = new ScheduledFuture[changeFeedWorkers];
+                for (int i = 0; i < changeFeedWorkers; i++) {
+                    final int finalI = i;
+                    changeFeedFutures[i] = scheduledThreadPoolExecutor.schedule(() -> {
+                        try {
+                            WorkloadUtils.onChangeFeed(
+                                    cosmosAsyncContainer,
+                                    cfg,
+                                    startTime,
+                                    runDuration,
+                                    finalI + scheduledFutures.length,
+                                    changeFeedSuccessCount,
+                                    changeFeedFailureCount,
+                                    lock);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, 10, TimeUnit.MILLISECONDS);
+                }
+            }
+
             while (!Instant.now().minus(runDuration).isAfter(startTime)) {
             }
 
@@ -264,6 +292,10 @@ public class PPAFDrillWorkload implements Workload {
 
             for (ScheduledFuture<?> scheduledFuture : scheduledFutures) {
                 scheduledFuture.cancel(true);
+            }
+
+            for (ScheduledFuture<?> changeFeedFuture : changeFeedFutures) {
+                changeFeedFuture.cancel(true);
             }
 
         } finally {
