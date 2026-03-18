@@ -72,7 +72,9 @@ public class PPAFDrillWorkload implements Workload {
 
         int parallelism = cfg.getNumberOfThreads();
 
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2 * parallelism, new CosmosDaemonThreadFactory("CosmosCreateExecutor"));
+        int changeFeedWorkers = cfg.shouldExecuteChangeFeedWorkload() ? Math.max(1, parallelism / 2) : 0;
+        int totalThreads = 2 * parallelism + changeFeedWorkers;
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(totalThreads, new CosmosDaemonThreadFactory("CosmosCreateExecutor"));
 
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture[2 * parallelism];
 
@@ -263,7 +265,6 @@ public class PPAFDrillWorkload implements Workload {
             boolean shouldIncludeChangeFeedWorkload = cfg.shouldExecuteChangeFeedWorkload();
             ScheduledFuture<?>[] changeFeedFutures = new ScheduledFuture[0];
             if (shouldIncludeChangeFeedWorkload) {
-                int changeFeedWorkers = Math.max(1, parallelism / 2);
                 changeFeedFutures = new ScheduledFuture[changeFeedWorkers];
                 for (int i = 0; i < changeFeedWorkers; i++) {
                     final int finalI = i;
@@ -280,6 +281,8 @@ public class PPAFDrillWorkload implements Workload {
                                     lock);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
+                        } catch (Exception e) {
+                            logger.error("Change feed worker {} crashed", finalI + scheduledFutures.length, e);
                         }
                     }, 10, TimeUnit.MILLISECONDS);
                 }

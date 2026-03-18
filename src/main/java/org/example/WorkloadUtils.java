@@ -699,72 +699,73 @@ public class WorkloadUtils {
             Object lock) throws InterruptedException {
 
         CosmosChangeFeedRequestOptions changeFeedRequestOptions = CosmosChangeFeedRequestOptions
-                .createForProcessingFromBeginning(FeedRange.forFullRange());
+                .createForProcessingFromNow(FeedRange.forFullRange());
 
         while (!Instant.now().minus(runDuration).isAfter(startTime)) {
 
             try {
-                List<FeedResponse<Book>> feedResponses = cosmosAsyncContainer
+                // Use byPage().next() instead of collectList() — the change feed Flux
+                // is an infinite stream, so collectList() blocks forever.
+                // Add timeout to prevent indefinite blocking when no changes available.
+                FeedResponse<Book> feedResponse = cosmosAsyncContainer
                         .queryChangeFeed(changeFeedRequestOptions, Book.class)
                         .byPage()
-                        .collectList()
-                        .block();
+                        .next()
+                        .block(Duration.ofSeconds(30));
 
-                if (feedResponses != null) {
-                    for (FeedResponse<Book> feedResponse : feedResponses) {
+                if (feedResponse != null) {
 
-                        int itemCount = feedResponse.getResults().size();
-                        int successCountSnapshot = successCount.addAndGet(itemCount);
-                        int failureCountSnapshot = failureCount.get();
+                    int itemCount = feedResponse.getResults().size();
+                    int successCountSnapshot = successCount.addAndGet(itemCount);
+                    int failureCountSnapshot = failureCount.get();
 
-                        Instant timeOfResponse = Instant.now();
-                        Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
+                    Instant timeOfResponse = Instant.now();
+                    Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
-                        Set<String> contactedRegionNames = feedResponse.getCosmosDiagnostics().getDiagnosticsContext().getContactedRegionNames();
-                        String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+                    Set<String> contactedRegionNames = feedResponse.getCosmosDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                    String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
 
-                        RequestResponseInfo requestResponseInfo;
+                    RequestResponseInfo requestResponseInfo;
 
-                        if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
-                            requestResponseInfo = RequestResponseInfo.builder()
-                                    .timeOfResponse(timeOfResponse)
-                                    .operationType(CHANGE_FEED_OP)
-                                    .drillId(cfg.getDrillId())
-                                    .withCounts(successCountSnapshot, failureCountSnapshot)
-                                    .threadId(scheduledFutureId)
-                                    .withSuccessResponse(200, feedResponse.getCosmosDiagnostics().toString())
-                                    .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
-                                    .connectionModeAsStr(cfg.getConnectionMode().name())
-                                    .containerName(cfg.getContainerName())
-                                    .accountName(cfg.getAccountHost())
-                                    .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
-                                    .databaseName(cfg.getDatabaseName())
-                                    .runTimeRemaining(remainingTime)
-                                    .build();
-                        } else {
-                            requestResponseInfo = RequestResponseInfo.builder()
-                                    .timeOfResponse(timeOfResponse)
-                                    .operationType(CHANGE_FEED_OP)
-                                    .drillId(cfg.getDrillId())
-                                    .withCounts(successCountSnapshot, failureCountSnapshot)
-                                    .threadId(scheduledFutureId)
-                                    .withSuccessResponse(200, "")
-                                    .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
-                                    .connectionModeAsStr(cfg.getConnectionMode().name())
-                                    .containerName(cfg.getContainerName())
-                                    .accountName(cfg.getAccountHost())
-                                    .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
-                                    .databaseName(cfg.getDatabaseName())
-                                    .runTimeRemaining(remainingTime)
-                                    .build();
-                        }
-
-                        logger.info(requestResponseInfo.toString());
-
-                        // Update continuation for next poll
-                        changeFeedRequestOptions = CosmosChangeFeedRequestOptions
-                                .createForProcessingFromContinuation(feedResponse.getContinuationToken());
+                    if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
+                        requestResponseInfo = RequestResponseInfo.builder()
+                                .timeOfResponse(timeOfResponse)
+                                .operationType(CHANGE_FEED_OP)
+                                .drillId(cfg.getDrillId())
+                                .withCounts(successCountSnapshot, failureCountSnapshot)
+                                .threadId(scheduledFutureId)
+                                .withSuccessResponse(200, feedResponse.getCosmosDiagnostics().toString())
+                                .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                .connectionModeAsStr(cfg.getConnectionMode().name())
+                                .containerName(cfg.getContainerName())
+                                .accountName(cfg.getAccountHost())
+                                .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                .databaseName(cfg.getDatabaseName())
+                                .runTimeRemaining(remainingTime)
+                                .build();
+                    } else {
+                        requestResponseInfo = RequestResponseInfo.builder()
+                                .timeOfResponse(timeOfResponse)
+                                .operationType(CHANGE_FEED_OP)
+                                .drillId(cfg.getDrillId())
+                                .withCounts(successCountSnapshot, failureCountSnapshot)
+                                .threadId(scheduledFutureId)
+                                .withSuccessResponse(200, "")
+                                .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                .connectionModeAsStr(cfg.getConnectionMode().name())
+                                .containerName(cfg.getContainerName())
+                                .accountName(cfg.getAccountHost())
+                                .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                .databaseName(cfg.getDatabaseName())
+                                .runTimeRemaining(remainingTime)
+                                .build();
                     }
+
+                    logger.info(requestResponseInfo.toString());
+
+                    // Update continuation for next poll
+                    changeFeedRequestOptions = CosmosChangeFeedRequestOptions
+                            .createForProcessingFromContinuation(feedResponse.getContinuationToken());
                 }
 
             } catch (Exception ex) {

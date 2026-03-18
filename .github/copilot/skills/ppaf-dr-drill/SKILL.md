@@ -30,9 +30,9 @@ You orchestrate the full lifecycle of running a PPAF DR drill workload:
 
 ## Repository Location
 
-The ppaf-dr-drill-workload repo is at:
+The ppaf-dr-drill repo is at:
 ```
-C:\Users\abhmohanty\Documents\GitHub\General\ppaf-dr-drill-workload
+C:\Users\abhmohanty\GitHub\ppaf-dr-drill
 ```
 
 ---
@@ -68,7 +68,7 @@ If custom, ask for the repo (`owner/repo` format) and branch name separately.
 Then build:
 
 ```powershell
-cd C:\Users\abhmohanty\Documents\GitHub\General\ppaf-dr-drill-workload
+cd C:\Users\abhmohanty\GitHub\ppaf-dr-drill
 
 # Use the build script
 .\build-custom-cosmos.ps1 -Repo "<owner/repo>" -Branch "<branch>"
@@ -115,7 +115,7 @@ Ask user to confirm which version to use.
 Build with the appropriate profile:
 
 ```powershell
-cd C:\Users\abhmohanty\Documents\GitHub\General\ppaf-dr-drill-workload
+cd C:\Users\abhmohanty\GitHub\ppaf-dr-drill
 
 # If using a custom-built JAR (Option 1 or specific Option 3 version):
 mvn clean package -Dpackage-with-dependencies -Plocal-cosmos -Dcosmos.version=<version>
@@ -156,8 +156,8 @@ Alternatively, check if cosmos-v4.properties or a local properties file exists:
 # Check for existing credentials
 $propsFiles = @(
     "cosmos-v4.properties",
-    "$env:USERPROFILE\Documents\GitHub\General\azure-sdk-for-java\sdk\cosmos\cosmos-v4.properties",
-    "$env:USERPROFILE\Documents\GitHub\General\azure-sdk-for-java-2\sdk\cosmos\cosmos-v4.properties"
+    "$env:USERPROFILE\GitHub\azure-sdk-for-java\sdk\cosmos\cosmos-v4.properties",
+    "$env:USERPROFILE\Documents\GitHub\General\azure-sdk-for-java\sdk\cosmos\cosmos-v4.properties"
 )
 foreach ($f in $propsFiles) {
     if (Test-Path $f) {
@@ -216,7 +216,7 @@ Generate the JSON config file from the answers (save as `drill-config.json` in t
 ## Step 4 — Run the Workload
 
 ```powershell
-cd C:\Users\abhmohanty\Documents\GitHub\General\ppaf-dr-drill-workload
+cd C:\Users\abhmohanty\GitHub\ppaf-dr-drill
 
 java -jar target/ppaf-dr-drill-workload-1.0-SNAPSHOT-jar-with-dependencies.jar `
   -configFile drill-config.json `

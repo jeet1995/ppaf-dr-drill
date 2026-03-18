@@ -80,7 +80,15 @@ Write-Host "[2/3] Building azure-cosmos module..." -ForegroundColor Yellow
 Push-Location $fullClonePath
 try {
     # Build azure-cosmos with its required dependencies, skip tests for speed
-    mvn install -pl sdk/cosmos/azure-cosmos -am -DskipTests -Dgpg.skip -Dcheckstyle.skip -Dspotbugs.skip -Drevapi.skip -Dmaven.javadoc.skip=true -T 2C
+    # Use --% to prevent PowerShell from reinterpreting Maven -D flags
+    mvn install -pl sdk/cosmos/azure-cosmos -am `
+        "-DskipTests" `
+        "-Dgpg.skip" `
+        "-Dcheckstyle.skip" `
+        "-Dspotbugs.skip" `
+        "-Drevapi.skip" `
+        "-Dmaven.javadoc.skip=true" `
+        -T 2C
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Maven build failed"
         exit 1

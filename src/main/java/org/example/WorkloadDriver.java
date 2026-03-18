@@ -27,8 +27,9 @@ public class WorkloadDriver {
                 System.exit(1);
             }
 
-            // Second pass: re-parse CLI args so they override JSON values
-            jCommander.parse(args);
+            // Second pass: re-parse CLI args so they override JSON values.
+            // Must create a fresh JCommander to avoid "option specified twice" errors.
+            JCommander.newBuilder().addObject(config).build().parse(args);
         }
 
         if (config.getDrillWorkloadType() == WorkloadType.PPAFDrillWorkload) {

@@ -43,3 +43,5 @@ build/
 
 ### Custom cosmos build directory ###
 .cosmos-build/
+### Drill log files ###
+*.log
