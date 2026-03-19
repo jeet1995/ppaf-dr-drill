@@ -778,8 +778,15 @@ public class WorkloadUtils {
                     Instant timeOfResponse = Instant.now();
                     Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
 
-                    Set<String> contactedRegionNames = cosmosException.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
-                    String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+                    String commaSeparatedContactedRegionNames = "";
+                    String diagnosticsString = "";
+                    if (cosmosException.getDiagnostics() != null) {
+                        if (cosmosException.getDiagnostics().getDiagnosticsContext() != null) {
+                            Set<String> contactedRegionNames = cosmosException.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                            commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+                        }
+                        diagnosticsString = cosmosException.getDiagnostics().toString();
+                    }
 
                     RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
                             .timeOfResponse(timeOfResponse)
@@ -787,7 +794,7 @@ public class WorkloadUtils {
                             .drillId(cfg.getDrillId())
                             .withCounts(successCountSnapshot, failureCountSnapshot)
                             .threadId(scheduledFutureId)
-                            .withErrorResponse(cosmosException.getStatusCode(), cosmosException.getSubStatusCode(), cosmosException.getMessage(), cosmosException.getDiagnostics().toString())
+                            .withErrorResponse(cosmosException.getStatusCode(), cosmosException.getSubStatusCode(), cosmosException.getMessage(), diagnosticsString)
                             .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
                             .connectionModeAsStr(cfg.getConnectionMode().name())
                             .containerName(cfg.getContainerName())
