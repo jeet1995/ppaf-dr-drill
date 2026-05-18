@@ -1,4 +1,4 @@
-package org.example;
+package com.azure.cosmos.ppaf.model;
 
 import java.util.UUID;
 
