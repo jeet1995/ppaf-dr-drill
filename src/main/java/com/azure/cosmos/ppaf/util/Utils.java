@@ -1,5 +1,4 @@
-package org.example;
-
+package com.azure.cosmos.ppaf.util;
 
 import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -8,6 +7,7 @@ import com.azure.cosmos.implementation.DatabaseAccountLocation;
 import com.azure.cosmos.implementation.GlobalEndpointManager;
 import com.azure.cosmos.implementation.RxDocumentClientImpl;
 import com.azure.cosmos.implementation.TestConfigurations;
+import com.azure.cosmos.ppaf.config.Configuration;
 
 import java.util.ArrayList;
 import java.util.Arrays;

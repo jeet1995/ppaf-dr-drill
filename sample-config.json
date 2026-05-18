@@ -19,5 +19,6 @@
   "shouldInjectResponseDelayForReads": false,
   "shouldUseSessionTokenOnRequestOptions": false,
   "shouldHaveE2ETimeoutForWrites": false,
-  "isThinClientEnabled": false
+  "isThinClientEnabled": false,
+  "readConsistencyStrategy": null
 }

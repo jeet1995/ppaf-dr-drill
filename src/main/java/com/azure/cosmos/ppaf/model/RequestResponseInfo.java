@@ -1,4 +1,4 @@
-package org.example;
+package com.azure.cosmos.ppaf.model;
 
 import java.time.Duration;
 import java.time.Instant;

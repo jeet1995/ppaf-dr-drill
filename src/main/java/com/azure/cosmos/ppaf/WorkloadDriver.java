@@ -1,5 +1,11 @@
-package org.example;
+package com.azure.cosmos.ppaf;
 
+import com.azure.cosmos.ppaf.config.Configuration;
+import com.azure.cosmos.ppaf.config.JsonConfigurationLoader;
+import com.azure.cosmos.ppaf.config.WorkloadType;
+import com.azure.cosmos.ppaf.workload.PPAFDrillWorkload;
+import com.azure.cosmos.ppaf.workload.PPAFForSessionConsistencyWorkload;
+import com.azure.cosmos.ppaf.workload.Workload;
 import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +37,8 @@ public class WorkloadDriver {
             // Must create a fresh JCommander to avoid "option specified twice" errors.
             JCommander.newBuilder().addObject(config).build().parse(args);
         }
+
+        logger.info("Configuration: {}", config);
 
         if (config.getDrillWorkloadType() == WorkloadType.PPAFDrillWorkload) {
             Workload workload = new PPAFDrillWorkload();

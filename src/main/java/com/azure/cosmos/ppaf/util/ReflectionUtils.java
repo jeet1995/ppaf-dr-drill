@@ -1,4 +1,4 @@
-package org.example;
+package com.azure.cosmos.ppaf.util;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 

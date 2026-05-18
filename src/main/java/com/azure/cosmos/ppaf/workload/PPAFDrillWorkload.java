@@ -1,4 +1,4 @@
-package org.example;
+package com.azure.cosmos.ppaf.workload;
 
 import com.azure.cosmos.ConnectionMode;
 import com.azure.cosmos.CosmosAsyncClient;
@@ -19,6 +19,8 @@ import com.azure.cosmos.test.faultinjection.FaultInjectionRule;
 import com.azure.cosmos.test.faultinjection.FaultInjectionRuleBuilder;
 import com.azure.cosmos.test.faultinjection.FaultInjectionServerErrorResult;
 import com.azure.cosmos.test.faultinjection.FaultInjectionServerErrorType;
+import com.azure.cosmos.ppaf.config.Configuration;
+import com.azure.cosmos.ppaf.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -100,6 +102,10 @@ public class PPAFDrillWorkload implements Workload {
                     .userAgentSuffix(drillId)
                     .connectionSharingAcrossClientsEnabled(true)
                     .sessionRetryOptions(WorkloadUtils.REMOTE_REGION_PREFERRED_SESSION_RETRY_OPTIONS);
+
+            if (cfg.getReadConsistencyStrategy() != null) {
+                clientBuilder = clientBuilder.readConsistencyStrategy(cfg.getReadConsistencyStrategy());
+            }
 
             if (connectionMode == ConnectionMode.DIRECT) {
                 clientBuilder = clientBuilder.directMode();

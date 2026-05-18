@@ -1,4 +1,4 @@
-package org.example;
+package com.azure.cosmos.ppaf.workload;
 
 import com.azure.cosmos.CosmosAsyncContainer;
 import com.azure.cosmos.CosmosDiagnosticsContext;
@@ -15,6 +15,9 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.FeedRange;
 import com.azure.cosmos.models.FeedResponse;
 import com.azure.cosmos.models.PartitionKey;
+import com.azure.cosmos.ppaf.config.Configuration;
+import com.azure.cosmos.ppaf.model.Book;
+import com.azure.cosmos.ppaf.model.RequestResponseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

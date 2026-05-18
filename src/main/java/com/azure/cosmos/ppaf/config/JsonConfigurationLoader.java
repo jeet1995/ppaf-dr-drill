@@ -1,6 +1,7 @@
-package org.example;
+package com.azure.cosmos.ppaf.config;
 
 import com.azure.cosmos.ConnectionMode;
+import com.azure.cosmos.ReadConsistencyStrategy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -105,6 +106,10 @@ public class JsonConfigurationLoader {
         }
         if (root.has("isThinClientEnabled")) {
             config.setThinClientEnabled(root.get("isThinClientEnabled").asBoolean());
+        }
+        if (root.has("readConsistencyStrategy") && !root.get("readConsistencyStrategy").isNull()) {
+            String strategy = root.get("readConsistencyStrategy").asText().toUpperCase(Locale.ROOT).replace(" ", "_").trim();
+            config.setReadConsistencyStrategy(ReadConsistencyStrategy.valueOf(strategy));
         }
 
         logger.info("Configuration loaded from JSON file successfully");
