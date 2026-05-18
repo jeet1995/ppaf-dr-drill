@@ -92,6 +92,9 @@ public class Configuration {
     @Parameter(names = "-isThinClientEnabled", description = "A boolean parameter to indicate whether the thin client is enabled.", arity = 1)
     private boolean isThinClientEnabled = false;
 
+    @Parameter(names = "-preferredRegions", description = "Comma-separated list of preferred regions (e.g., 'North Central US,West US'). If not set, all regions are auto-discovered from the account.")
+    private String preferredRegions = "";
+
     public String getConfigFile() {
         return this.configFile;
     }
@@ -271,6 +274,14 @@ public class Configuration {
 
     public void setShouldHaveE2ETimeoutForWrites(boolean value) {
         this.shouldHaveE2ETimeoutForWrites = value;
+    }
+
+    public String getPreferredRegions() {
+        return this.preferredRegions;
+    }
+
+    public void setPreferredRegions(String preferredRegions) {
+        this.preferredRegions = preferredRegions;
     }
 
 

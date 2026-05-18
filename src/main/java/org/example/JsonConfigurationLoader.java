@@ -106,6 +106,9 @@ public class JsonConfigurationLoader {
         if (root.has("isThinClientEnabled")) {
             config.setThinClientEnabled(root.get("isThinClientEnabled").asBoolean());
         }
+        if (root.has("preferredRegions")) {
+            config.setPreferredRegions(root.get("preferredRegions").asText());
+        }
 
         logger.info("Configuration loaded from JSON file successfully");
     }
