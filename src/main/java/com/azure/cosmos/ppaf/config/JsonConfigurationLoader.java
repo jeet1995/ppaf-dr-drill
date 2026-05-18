@@ -111,6 +111,9 @@ public class JsonConfigurationLoader {
             String strategy = root.get("readConsistencyStrategy").asText().toUpperCase(Locale.ROOT).replace(" ", "_").trim();
             config.setReadConsistencyStrategy(ReadConsistencyStrategy.valueOf(strategy));
         }
+        if (root.has("preferredRegions")) {
+            config.setPreferredRegions(root.get("preferredRegions").asText());
+        }
 
         logger.info("Configuration loaded from JSON file successfully");
     }

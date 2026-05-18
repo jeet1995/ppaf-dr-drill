@@ -125,6 +125,10 @@ public class Configuration {
     @JsonProperty("readConsistencyStrategy")
     private ReadConsistencyStrategy readConsistencyStrategy = null;
 
+    @Parameter(names = "-preferredRegions", description = "Comma-separated list of preferred regions (e.g., 'North Central US,West US'). If not set, all regions are auto-discovered from the account.")
+    @JsonProperty("preferredRegions")
+    private String preferredRegions = "";
+
     public static Configuration fromJsonFile(String filePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -317,6 +321,14 @@ public class Configuration {
 
     public void setShouldHaveE2ETimeoutForWrites(boolean value) {
         this.shouldHaveE2ETimeoutForWrites = value;
+    }
+
+    public String getPreferredRegions() {
+        return this.preferredRegions;
+    }
+
+    public void setPreferredRegions(String preferredRegions) {
+        this.preferredRegions = preferredRegions;
     }
 
 

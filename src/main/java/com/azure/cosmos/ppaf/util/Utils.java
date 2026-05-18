@@ -20,6 +20,14 @@ public class Utils {
 
     public static List<String> getPreferredRegions(Configuration configuration) {
 
+        // Use explicitly configured preferred regions if provided
+        if (configuration.getPreferredRegions() != null && !configuration.getPreferredRegions().isEmpty()) {
+            return Arrays.stream(configuration.getPreferredRegions().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         String documentEndpoint = configuration.getAccountHost().isEmpty() ? TestConfigurations.HOST : configuration.getAccountHost();
         String masterKey = configuration.getAccountMasterKey().isEmpty() ? TestConfigurations.MASTER_KEY : configuration.getAccountMasterKey();
 
