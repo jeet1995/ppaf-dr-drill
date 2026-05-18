@@ -25,8 +25,8 @@ public class Configuration {
     // Define the date format
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-    @Parameter(names = "-configFile", description = "Path to a JSON configuration file. When provided, config is loaded from this file instead of CLI args.")
-    private String configFile;
+    @Parameter(names = "-configFile", description = "Path to a JSON configuration file. CLI args override JSON values.")
+    private String configFile = "";
 
     @Parameter(names = "-accountMasterKey", description = "The master key associated with the account.", required = false)
     @JsonProperty("accountMasterKey")
@@ -114,6 +114,9 @@ public class Configuration {
     @JsonProperty("shouldHaveE2ETimeoutForWrites")
     private boolean shouldHaveE2ETimeoutForWrites = false;
 
+    @Parameter(names = "-shouldExecuteChangeFeedWorkload", description = "A boolean parameter to indicate whether change feed workload should be executed.", arity = 1)
+    private boolean shouldExecuteChangeFeedWorkload = false;
+
     @Parameter(names = "-isThinClientEnabled", description = "A boolean parameter to indicate whether the thin client is enabled.", arity = 1)
     @JsonProperty("isThinClientEnabled")
     private boolean isThinClientEnabled = false;
@@ -130,6 +133,10 @@ public class Configuration {
 
     public String getConfigFile() {
         return this.configFile;
+    }
+
+    public boolean shouldExecuteChangeFeedWorkload() {
+        return this.shouldExecuteChangeFeedWorkload;
     }
 
     public boolean shouldLogCosmosDiagnosticsForSuccessfulResponse() {
@@ -268,6 +275,51 @@ public class Configuration {
         this.readConsistencyStrategy = readConsistencyStrategy;
     }
 
+    public void setAccountMasterKey(String accountMasterKey) {
+        this.accountMasterKey = accountMasterKey;
+    }
+
+    public void setSharedThroughput(boolean sharedThroughput) {
+        this.isSharedThroughput = sharedThroughput;
+    }
+
+    public void setShouldLogCosmosDiagnosticsForSuccessfulResponse(boolean value) {
+        this.shouldLogCosmosDiagnosticsForSuccessfulResponse = value;
+    }
+
+    public void setShouldExecuteReadWorkload(boolean value) {
+        this.shouldExecuteReadWorkload = value;
+    }
+
+    public void setShouldExecuteQueryWorkload(boolean value) {
+        this.shouldExecuteQueryWorkload = value;
+    }
+
+    public void setShouldExecuteChangeFeedWorkload(boolean value) {
+        this.shouldExecuteChangeFeedWorkload = value;
+    }
+
+    public void setShouldInjectResponseDelayForReads(boolean value) {
+        this.shouldInjectResponseDelayForReads = value;
+    }
+
+    public void setDrillId(String drillId) {
+        this.drillId = drillId;
+    }
+
+    public void setDrillWorkloadType(WorkloadType drillWorkloadType) {
+        this.drillWorkloadType = drillWorkloadType;
+    }
+
+    public void setShouldUseSessionTokenOnRequestOptions(boolean value) {
+        this.shouldUseSessionTokenOnRequestOptions = value;
+    }
+
+    public void setShouldHaveE2ETimeoutForWrites(boolean value) {
+        this.shouldHaveE2ETimeoutForWrites = value;
+    }
+
+
     @Override
     public String toString() {
         return String.format("""
@@ -286,6 +338,7 @@ public class Configuration {
                     - Sleep Time: %d ms
                     - Execute Read Workload: %b
                     - Execute Query Workload: %b
+                    - Execute Change Feed Workload: %b
                     - Drill ID: %s
                     - Drill Workload Type: %s
                     
@@ -312,6 +365,7 @@ public class Configuration {
                 sleepTime,
                 shouldExecuteReadWorkload,
                 shouldExecuteQueryWorkload,
+                shouldExecuteChangeFeedWorkload,
                 drillId,
                 drillWorkloadType,
                 connectionMode,

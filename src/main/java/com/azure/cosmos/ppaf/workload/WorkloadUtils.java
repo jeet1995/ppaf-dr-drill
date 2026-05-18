@@ -9,8 +9,11 @@ import com.azure.cosmos.CosmosRegionSwitchHint;
 import com.azure.cosmos.SessionRetryOptions;
 import com.azure.cosmos.SessionRetryOptionsBuilder;
 import com.azure.cosmos.ThresholdBasedAvailabilityStrategy;
+import com.azure.cosmos.models.CosmosChangeFeedRequestOptions;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
+import com.azure.cosmos.models.FeedRange;
+import com.azure.cosmos.models.FeedResponse;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.ppaf.config.Configuration;
 import com.azure.cosmos.ppaf.model.Book;
@@ -35,6 +38,7 @@ public class WorkloadUtils {
     public static final String CREATE_OP = "create";
     public static final String READ_OP = "read";
     public static final String QUERY_OP = "query";
+    public static final String CHANGE_FEED_OP = "changeFeed";
 
     public static final CosmosEndToEndOperationLatencyPolicyConfig E2E_POLICY_FOR_WRITE
             = new CosmosEndToEndOperationLatencyPolicyConfigBuilder(Duration.ofSeconds(3)).build();
@@ -684,6 +688,133 @@ public class WorkloadUtils {
 
                 Thread.sleep(cfg.getSleepTime());
             }
+        }
+    }
+
+    public static void onChangeFeed(
+            CosmosAsyncContainer cosmosAsyncContainer,
+            Configuration cfg,
+            Instant startTime,
+            Duration runDuration,
+            int scheduledFutureId,
+            AtomicInteger successCount,
+            AtomicInteger failureCount,
+            Object lock) throws InterruptedException {
+
+        CosmosChangeFeedRequestOptions changeFeedRequestOptions = CosmosChangeFeedRequestOptions
+                .createForProcessingFromNow(FeedRange.forFullRange());
+
+        while (!Instant.now().minus(runDuration).isAfter(startTime)) {
+
+            try {
+                // Use byPage().next() instead of collectList() — the change feed Flux
+                // is an infinite stream, so collectList() blocks forever.
+                // Add timeout to prevent indefinite blocking when no changes available.
+                FeedResponse<Book> feedResponse = cosmosAsyncContainer
+                        .queryChangeFeed(changeFeedRequestOptions, Book.class)
+                        .byPage()
+                        .next()
+                        .block(Duration.ofSeconds(30));
+
+                if (feedResponse != null) {
+
+                    int itemCount = feedResponse.getResults().size();
+                    int successCountSnapshot = successCount.addAndGet(itemCount);
+                    int failureCountSnapshot = failureCount.get();
+
+                    Instant timeOfResponse = Instant.now();
+                    Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
+
+                    Set<String> contactedRegionNames = feedResponse.getCosmosDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                    String commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+
+                    RequestResponseInfo requestResponseInfo;
+
+                    if (cfg.shouldLogCosmosDiagnosticsForSuccessfulResponse()) {
+                        requestResponseInfo = RequestResponseInfo.builder()
+                                .timeOfResponse(timeOfResponse)
+                                .operationType(CHANGE_FEED_OP)
+                                .drillId(cfg.getDrillId())
+                                .withCounts(successCountSnapshot, failureCountSnapshot)
+                                .threadId(scheduledFutureId)
+                                .withSuccessResponse(200, feedResponse.getCosmosDiagnostics().toString())
+                                .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                .connectionModeAsStr(cfg.getConnectionMode().name())
+                                .containerName(cfg.getContainerName())
+                                .accountName(cfg.getAccountHost())
+                                .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                .databaseName(cfg.getDatabaseName())
+                                .runTimeRemaining(remainingTime)
+                                .build();
+                    } else {
+                        requestResponseInfo = RequestResponseInfo.builder()
+                                .timeOfResponse(timeOfResponse)
+                                .operationType(CHANGE_FEED_OP)
+                                .drillId(cfg.getDrillId())
+                                .withCounts(successCountSnapshot, failureCountSnapshot)
+                                .threadId(scheduledFutureId)
+                                .withSuccessResponse(200, "")
+                                .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                                .connectionModeAsStr(cfg.getConnectionMode().name())
+                                .containerName(cfg.getContainerName())
+                                .accountName(cfg.getAccountHost())
+                                .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                                .databaseName(cfg.getDatabaseName())
+                                .runTimeRemaining(remainingTime)
+                                .build();
+                    }
+
+                    logger.info(requestResponseInfo.toString());
+
+                    // Update continuation for next poll
+                    changeFeedRequestOptions = CosmosChangeFeedRequestOptions
+                            .createForProcessingFromContinuation(feedResponse.getContinuationToken());
+                }
+
+            } catch (Exception ex) {
+                if (ex.getCause() instanceof CosmosException) {
+                    CosmosException cosmosException = (CosmosException) ex.getCause();
+
+                    int successCountSnapshot = successCount.get();
+                    int failureCountSnapshot = failureCount.incrementAndGet();
+
+                    Instant timeOfResponse = Instant.now();
+                    Duration remainingTime = runDuration.minus(Duration.between(startTime, timeOfResponse));
+
+                    String commaSeparatedContactedRegionNames = "";
+                    String diagnosticsString = "";
+                    if (cosmosException.getDiagnostics() != null) {
+                        if (cosmosException.getDiagnostics().getDiagnosticsContext() != null) {
+                            Set<String> contactedRegionNames = cosmosException.getDiagnostics().getDiagnosticsContext().getContactedRegionNames();
+                            commaSeparatedContactedRegionNames = String.join(",", contactedRegionNames);
+                        }
+                        diagnosticsString = cosmosException.getDiagnostics().toString();
+                    }
+
+                    RequestResponseInfo requestResponseInfo = RequestResponseInfo.builder()
+                            .timeOfResponse(timeOfResponse)
+                            .operationType(CHANGE_FEED_OP)
+                            .drillId(cfg.getDrillId())
+                            .withCounts(successCountSnapshot, failureCountSnapshot)
+                            .threadId(scheduledFutureId)
+                            .withErrorResponse(cosmosException.getStatusCode(), cosmosException.getSubStatusCode(), cosmosException.getMessage(), diagnosticsString)
+                            .commaSeparatedContactedRegions(commaSeparatedContactedRegionNames)
+                            .connectionModeAsStr(cfg.getConnectionMode().name())
+                            .containerName(cfg.getContainerName())
+                            .accountName(cfg.getAccountHost())
+                            .possiblyColdStartClient(runDuration.compareTo(Duration.ofHours(1)) < 0)
+                            .databaseName(cfg.getDatabaseName())
+                            .runTimeRemaining(remainingTime)
+                            .build();
+
+                    logger.error(requestResponseInfo.toString());
+                } else {
+                    logger.error("Unexpected error in change feed workload", ex);
+                    failureCount.incrementAndGet();
+                }
+            }
+
+            Thread.sleep(cfg.getSleepTime());
         }
     }
 
