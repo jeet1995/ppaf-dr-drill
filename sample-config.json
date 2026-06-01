@@ -14,7 +14,7 @@
   "isSharedThroughput": false,
   "shouldExecuteReadWorkload": true,
   "shouldExecuteQueryWorkload": true,
-  "shouldExecuteChangeFeedWorkload": false,
+  "shouldExecuteChangeFeedWorkload": true,
   "shouldLogCosmosDiagnosticsForSuccessfulResponse": false,
   "shouldInjectResponseDelayForReads": false,
   "shouldUseSessionTokenOnRequestOptions": false,
